@@ -171,27 +171,62 @@ class SliderWidget(QtWidgets.QFrame):
 
         # Изображение
         self.image_label = QtWidgets.QLabel(page1)
-        self.image_label.setGeometry(QtCore.QRect(592, 70, 380, 255))  # Положение и размер изображения
-        pixmap = QtGui.QPixmap("slider_1.1.jpg")  # Замените на путь к вашему изображению
+        self.image_label.setGeometry(QtCore.QRect(592, 70, 380, 255))
+        self.image_label.setStyleSheet("border-radius: 16px;") # Скругление
+        self.image_label.setScaledContents(True) # Масштабирование
+        pixmap = QtGui.QPixmap("slider_1.1.jpg")
         if pixmap.isNull():
-            # Если изображение не найдено, используем заглушку
             pixmap = QtGui.QPixmap(200, 150)
             pixmap.fill(QtCore.Qt.lightGray)
-        self.image_label.setPixmap(pixmap.scaled(380, 255, QtCore.Qt.KeepAspectRatio))
+        self.image_label.setPixmap(pixmap)
         self.image_label.setCursor(QtCore.Qt.PointingHandCursor)
-        self.image_label.mousePressEvent = self.show_image_window
+        self.image_label.mousePressEvent = lambda event: self.show_image_window("slider_1.1.jpg")
+
 
         self.stacked_widget.addWidget(page1)
 
         # Страница 2
         page2 = QtWidgets.QWidget()
-        layout2 = QtWidgets.QVBoxLayout(page2)
-        label2 = QtWidgets.QLabel("Это второй экран", page2)
-        label2.setAlignment(QtCore.Qt.AlignCenter)
-        layout2.addWidget(label2)
-        label2_number_text = QtWidgets.QLabel("2/4", page2)
-        label2_number_text.setGeometry(QtCore.QRect(450, 360, 30, 15))
-        label2_number_text.setFont(QtGui.QFont(font_family_semibold, 10))
+        label1_slider2_text = QtWidgets.QLabel("Шаг 2.", page2)
+        label1_slider2_text.setGeometry(QtCore.QRect(30, 30, 90, 20))
+        label1_slider2_text.setFont(QtGui.QFont(font_family_semibold, 14))
+
+        label2_slider2_text = QtWidgets.QLabel(page2)
+        label2_slider2_text.setGeometry(QtCore.QRect(30, 60, 600, 234))
+        label2_slider2_text.setText("""
+                <p style='line-height:60%; margin:0;'>
+                    <span style='color:#383535;'>В появившемся окне необходимо указать путь к вебрайверу <br></span>
+                    <span style='color:#383535;'>для браузера, который вы собираетесь использовать: Google<br></span>
+                    <span style='color:#383535;'>или Microsoft Edge.<br><br></span>
+                    <span style='color:#383535;'>Вебдрайвер можно скачать в интернете по запросу: «WebDriver<br></span>
+                    <span style='color:#383535;'>для {Ваш браузер}»<br><br></span>
+                    <span style='color:#383535;'>Указывать путь необходимо к файлу с расширением.exe<br><br></span>
+                    <span style='color:#383535;'>Далее необходимо указать путь к входящим данным<br></span>
+                    <span style='color:#383535;'>в формате.docx, выбрать браузер, который хотите использовать<br></span>
+                    <span style='color:#38355;'>и указать базы данных, если будет использоваться поисковая<br></span>
+                    <span style='color:#383535;'>система ФИПС</span>
+                </p>
+                """)
+        label2_slider2_text.setFont(QtGui.QFont(font_family_regular, 10))
+
+        label3_slider2_text = QtWidgets.QLabel("2/4", page2)
+        label3_slider2_text.setGeometry(QtCore.QRect(450, 360, 30, 15))
+        label3_slider2_text.setFont(QtGui.QFont(font_family_semibold, 10))
+
+        # Изображение
+        self.image_label_slider2 = QtWidgets.QLabel(page2)
+        self.image_label_slider2.setGeometry(QtCore.QRect(592, 70, 380, 255))
+        self.image_label_slider2.setStyleSheet("border-radius: 16px;") # Скругление
+        self.image_label_slider2.setScaledContents(True) # Масштабирование
+        pixmap = QtGui.QPixmap("slider_2.1.jpg")
+        if pixmap.isNull():
+            pixmap = QtGui.QPixmap(200, 150)
+            pixmap.fill(QtCore.Qt.lightGray)
+        self.image_label_slider2.setPixmap(pixmap)
+        self.image_label_slider2.setCursor(QtCore.Qt.PointingHandCursor)
+        self.image_label_slider2.mousePressEvent = lambda event: self.show_image_window("slider_2.1.jpg")
+
+
         self.stacked_widget.addWidget(page2)
 
         # Страница 3
@@ -217,9 +252,8 @@ class SliderWidget(QtWidgets.QFrame):
         self.stacked_widget.addWidget(page4)
 
         # Кнопка "Вправо"
-        # Для стрелки вправо используем два изображения: обычное и для ховера
-        self.right_btn = QtWidgets.QPushButton("", self)  # Пустой текст
-        self.right_btn.setFixedSize(24, 24)  # Размер кнопки
+        self.right_btn = QtWidgets.QPushButton("", self)
+        self.right_btn.setFixedSize(24, 24)
         self.right_btn.setGeometry(480, 355, 24, 24)
         self.right_btn.setStyleSheet("""
                     QPushButton {
@@ -238,9 +272,9 @@ class SliderWidget(QtWidgets.QFrame):
         self.update_buttons()
 
 
-    def show_image_window(self, event):
+    def show_image_window(self, image_path):
         """Обработчик события клика по изображению"""
-        self.image_window = ImageWindow("slider_1.1.jpg")
+        self.image_window = ImageWindow(image_path)
         self.image_window.show()
 
     def next_page(self):
