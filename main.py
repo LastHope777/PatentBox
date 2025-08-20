@@ -5,6 +5,8 @@ import time
 from docx import Document
 import sys
 from PyQt5 import QtWidgets, QtGui
+
+from page_instruction import Ui_InstructionWindow
 from patent_ptoject_design_main_menu import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
 from selenium.webdriver.chrome.service import Service
@@ -23,6 +25,7 @@ class MyApp(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.second_window = None
         self.ui.pushButton_start.clicked.connect(self.open_second_window)
+        self.ui.pushButton_help.clicked.connect(self.open_help_window)
 
     # Переход на второй экран
     def open_second_window(self):
@@ -30,6 +33,23 @@ class MyApp(QtWidgets.QMainWindow):
         self.second_window.show()
         self.close()
 
+    def open_help_window(self):
+        self.help_window = HelpWindow()
+        self.help_window.show()
+        self.close()
+
+class HelpWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_InstructionWindow()
+        self.ui.setupUi(self)
+        # Кнопка "Назад"
+        self.ui.back_btn.clicked.connect(self.go_back)
+
+    def go_back(self):
+        self.first_window = MyApp()
+        self.first_window.show()
+        self.close()
 
 class WorkWithWord(QtWidgets.QMainWindow):
 
