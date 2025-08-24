@@ -71,7 +71,7 @@ class Ui_InstructionSlider(object):
 
         # Слайдер
         self.slider = SliderWidget(self.centralwidget)
-        self.slider.setGeometry(30, 264, 964, 390)  # Размещение и размер слайдера
+        self.slider.setGeometry(30, 264, 964, 420)  # Размещение и размер слайдера
 
         # Нижняя надпись
         self.label_footer = QtWidgets.QLabel(self.centralwidget)
@@ -115,13 +115,13 @@ class SliderWidget(QtWidgets.QFrame):
 
         # Виджет для содержимого слайдера
         self.stacked_widget = QtWidgets.QStackedWidget(self)
-        self.stacked_widget.setGeometry(0, 0, 964, 390)  # Занимает всю площадь контейнера
+        self.stacked_widget.setGeometry(0, 0, 964, 420)  # Занимает всю площадь контейнера
 
         # Кнопка "Влево"
         # Для стрелки влево используем два изображения: обычное и для ховера
         self.left_btn = QtWidgets.QPushButton("", self)  # Пустой текст
         self.left_btn.setFixedSize(24, 24)  # Размер кнопки
-        self.left_btn.setGeometry(422, 355, 24, 24)
+        self.left_btn.setGeometry(422, 375, 24, 24)
         self.left_btn.setStyleSheet("""
             QPushButton {
                 border: none;
@@ -151,7 +151,7 @@ class SliderWidget(QtWidgets.QFrame):
         page1 = QtWidgets.QWidget()
 
         label1_text = QtWidgets.QLabel("Шаг 1.", page1)
-        label1_text.setGeometry(QtCore.QRect(30, 30, 90, 20))
+        label1_text.setGeometry(QtCore.QRect(30, 30, 90, 25))
         label1_text.setFont(QtGui.QFont(font_family_semibold, 14))
 
         label2_text = QtWidgets.QLabel(page1)
@@ -164,15 +164,14 @@ class SliderWidget(QtWidgets.QFrame):
         </p>
         """)
         label2_text.setFont(QtGui.QFont(font_family_regular, 10))
-
-        label3_text = QtWidgets.QLabel("1/4", page1)
-        label3_text.setGeometry(QtCore.QRect(450, 360, 30, 15))
+        label2_text.setStyleSheet("background-color: transparent;")
+        label3_text = QtWidgets.QLabel("1/5", page1)
+        label3_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
         label3_text.setFont(QtGui.QFont(font_family_semibold, 10))
 
         # Изображение
         self.image_label = QtWidgets.QLabel(page1)
-        self.image_label.setGeometry(QtCore.QRect(592, 70, 380, 255))
-        self.image_label.setStyleSheet("border-radius: 16px;") # Скругление
+        self.image_label.setGeometry(QtCore.QRect(592, 70, 340, 240))
         self.image_label.setScaledContents(True) # Масштабирование
         pixmap = QtGui.QPixmap("slider_1.1.jpg")
         if pixmap.isNull():
@@ -188,7 +187,7 @@ class SliderWidget(QtWidgets.QFrame):
         # Страница 2
         page2 = QtWidgets.QWidget()
         label1_slider2_text = QtWidgets.QLabel("Шаг 2.", page2)
-        label1_slider2_text.setGeometry(QtCore.QRect(30, 30, 90, 20))
+        label1_slider2_text.setGeometry(QtCore.QRect(30, 30, 90, 25))
         label1_slider2_text.setFont(QtGui.QFont(font_family_semibold, 14))
 
         label2_slider2_text = QtWidgets.QLabel(page2)
@@ -209,14 +208,13 @@ class SliderWidget(QtWidgets.QFrame):
                 """)
         label2_slider2_text.setFont(QtGui.QFont(font_family_regular, 10))
 
-        label3_slider2_text = QtWidgets.QLabel("2/4", page2)
-        label3_slider2_text.setGeometry(QtCore.QRect(450, 360, 30, 15))
+        label3_slider2_text = QtWidgets.QLabel("2/5", page2)
+        label3_slider2_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
         label3_slider2_text.setFont(QtGui.QFont(font_family_semibold, 10))
 
         # Изображение
         self.image_label_slider2 = QtWidgets.QLabel(page2)
-        self.image_label_slider2.setGeometry(QtCore.QRect(592, 70, 380, 255))
-        self.image_label_slider2.setStyleSheet("border-radius: 16px;") # Скругление
+        self.image_label_slider2.setGeometry(QtCore.QRect(592, 70, 340, 240))
         self.image_label_slider2.setScaledContents(True) # Масштабирование
         pixmap = QtGui.QPixmap("slider_2.1.jpg")
         if pixmap.isNull():
@@ -231,30 +229,246 @@ class SliderWidget(QtWidgets.QFrame):
 
         # Страница 3
         page3 = QtWidgets.QWidget()
-        layout3 = QtWidgets.QVBoxLayout(page3)
-        label3 = QtWidgets.QLabel("Это третий экран", page3)
-        label3.setAlignment(QtCore.Qt.AlignCenter)
-        layout3.addWidget(label3)
-        label3_number_text = QtWidgets.QLabel("3/4", page3)
-        label3_number_text.setGeometry(QtCore.QRect(450, 360, 30, 15))
-        label3_number_text.setFont(QtGui.QFont(font_family_semibold, 10))
+        label1_slider3_text = QtWidgets.QLabel("Шаг 3. Правильное оформление входящих данных", page3)
+        label1_slider3_text.setGeometry(QtCore.QRect(30, 30, 630, 25))
+        label1_slider3_text.setFont(QtGui.QFont(font_family_semibold, 14))
+
+        label2_slider3_text = QtWidgets.QLabel(page3)
+        label2_slider3_text.setGeometry(QtCore.QRect(30, 60, 480, 105))
+        label2_slider3_text.setText("""
+                        <p style='line-height:60%; margin:0;'>
+                            <span style='color:#383535;'>Приложение поддерживает работу с тремя платформами<br></span>
+                            <span style='color:#383535;'>для управления интеллектуальной собственностью: Поисковая<br></span>
+                            <span style='color:#383535;'>система ФИПС, Поисковая платформа Роспатента и Patenscope.<br><br></span>
+                            <span style='color:#383535;'>Для корректной работы программы необходимо предоставлять<br></span>
+                            <span style='color:#383535;'>данные в формате.docx</span>
+                        </p>
+                        """)
+        label2_slider3_text.setFont(QtGui.QFont(font_family_regular, 9))
+
+        label4_slider3_text = QtWidgets.QLabel(page3)
+        label4_slider3_text.setGeometry(QtCore.QRect(30, 170, 500, 28))
+        label4_slider3_text.setText("""
+                        <p style='line-height:60%; margin:0;'>
+                            <span style='color:#383535;'>Оформление входящих данных для поисковой системы ФИПС:</span>
+                        </p>
+                        """)
+        label4_slider3_text.setFont(QtGui.QFont(font_family_semibold, 9))
+
+        label5_slider3_text = QtWidgets.QLabel(page3)
+        label5_slider3_text.setGeometry(QtCore.QRect(30, 203, 520, 89))
+        label5_slider3_text.setText("""
+                        <p style='line-height:60%; margin:0;'>
+                            <span style='color:#383535;'>1. Необходимо создать таблицу с необходимым количеством строк<br></span>
+                            <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;и всего одним столбцом;<br></span>
+                            <span style='color:#383535;'>2. В первой строке указать «ФИПС» или «Фипс» или «фипс»;<br></span>
+                            <span style='color:#383535;'>3. Далее в каждой последующей ячейке указать номер документа <br></span>
+                            <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;(Только цифры).</span>
+                        </p>
+                        """)
+        label5_slider3_text.setFont(QtGui.QFont(font_family_regular, 9))
+
+        label6_slider3_text = QtWidgets.QLabel(page3)
+        label6_slider3_text.setGeometry(QtCore.QRect(566, 170, 100, 27))
+        label6_slider3_text.setText("""
+                                <p style='line-height:60%; margin:0;'>
+                                    <span style='color:#383535;'>Пример:</span>
+                                </p>
+                                """)
+        label6_slider3_text.setFont(QtGui.QFont(font_family_semibold, 9))
+
+        label3_slider3_text = QtWidgets.QLabel("3/5", page3)
+        label3_slider3_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
+        label3_slider3_text.setFont(QtGui.QFont(font_family_semibold, 10))
+
+        # Изображение
+        self.image_label_slider3 = QtWidgets.QLabel(page3)
+        self.image_label_slider3.setGeometry(QtCore.QRect(566, 201, 350, 60))
+        self.image_label_slider3.setScaledContents(True)  # Масштабирование
+        pixmap = QtGui.QPixmap("slider_3.1.jpg")
+        if pixmap.isNull():
+            pixmap = QtGui.QPixmap(200, 150)
+            pixmap.fill(QtCore.Qt.lightGray)
+        self.image_label_slider3.setPixmap(pixmap)
+        self.image_label_slider3.setCursor(QtCore.Qt.PointingHandCursor)
+        self.image_label_slider3.mousePressEvent = lambda event: self.show_image_window("slider_3.1.jpg")
+
         self.stacked_widget.addWidget(page3)
 
         # Страница 4
         page4 = QtWidgets.QWidget()
-        layout4 = QtWidgets.QVBoxLayout(page4)
-        label4 = QtWidgets.QLabel("Это четвёртый экран", page4)
-        label4.setAlignment(QtCore.Qt.AlignCenter)
-        layout4.addWidget(label4)
-        label4_number_text = QtWidgets.QLabel("4/4", page4)
-        label4_number_text.setGeometry(QtCore.QRect(450, 360, 30, 15))
-        label4_number_text.setFont(QtGui.QFont(font_family_semibold, 10))
+        label1_slider4_text = QtWidgets.QLabel("Шаг 3. Правильное оформление входящих данных", page4)
+        label1_slider4_text.setGeometry(QtCore.QRect(30, 30, 630, 25))
+        label1_slider4_text.setFont(QtGui.QFont(font_family_semibold, 14))
+
+        label2_slider4_text = QtWidgets.QLabel(page4)
+        label2_slider4_text.setGeometry(QtCore.QRect(30, 60, 560, 45))
+        label2_slider4_text.setText("""
+                                <p style='line-height:60%; margin:0;'>
+                                    <span style='color:#383535;'>Оформление входящих данных для поисковой<br>платформы Роспатента:</span>
+                                </p>
+                                """)
+        label2_slider4_text.setFont(QtGui.QFont(font_family_semibold, 9))
+
+        label7_slider4_text = QtWidgets.QLabel(page4)
+        label7_slider4_text.setGeometry(QtCore.QRect(30, 105, 520, 89))
+        label7_slider4_text.setText("""
+                                        <p style='line-height:60%; margin:0;'>
+                                            <span style='color:#383535;'>1. Необходимо создать таблицу с необходимым количеством строк<br></span>
+                                            <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;и всего одним столбцом;<br></span>
+                                            <span style='color:#383535;'>2. В первой строке указать «Платформа» или «платформа»;<br></span>
+                                            <span style='color:#383535;'>3. Далее в каждой последующей ячейке указать номер документа <br></span>
+                                            <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;(Вместе с кодом страны и кодом типа документа).</span>
+                                        </p>
+                                        """)
+        label7_slider4_text.setFont(QtGui.QFont(font_family_regular, 9))
+
+        label4_slider4_text = QtWidgets.QLabel(page4)
+        label4_slider4_text.setGeometry(QtCore.QRect(30, 200, 500, 28))
+        label4_slider4_text.setText("""
+                                <p style='line-height:60%; margin:0;'>
+                                    <span style='color:#383535;'>Оформление входящих данных для Patentscope:</span>
+                                </p>
+                                """)
+        label4_slider4_text.setFont(QtGui.QFont(font_family_semibold, 9))
+
+        label5_slider4_text = QtWidgets.QLabel(page4)
+        label5_slider4_text.setGeometry(QtCore.QRect(30, 233, 520, 89))
+        label5_slider4_text.setText("""
+                                <p style='line-height:60%; margin:0;'>
+                                    <span style='color:#383535;'>1. Необходимо создать таблицу с необходимым количеством строк<br></span>
+                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;и всего одним столбцом;<br></span>
+                                    <span style='color:#383535;'>2. В первой строке указать «ФИПС» или «Фипс» или «фипс»;<br></span>
+                                    <span style='color:#383535;'>3. Далее в каждой последующей ячейке указать номер документа <br></span>
+                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;(Только цифры)</span>
+                                </p>
+                                """)
+        label5_slider4_text.setFont(QtGui.QFont(font_family_regular, 9))
+
+        label6_slider4_text = QtWidgets.QLabel(page4)
+        label6_slider4_text.setGeometry(QtCore.QRect(566, 60, 100, 27))
+        label6_slider4_text.setText("""
+                                        <p style='line-height:60%; margin:0;'>
+                                            <span style='color:#383535;'>Пример:</span>
+                                        </p>
+                                        """)
+        label6_slider4_text.setFont(QtGui.QFont(font_family_semibold, 9))
+
+        label3_slider4_text = QtWidgets.QLabel("4/5", page4)
+        label3_slider4_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
+        label3_slider4_text.setFont(QtGui.QFont(font_family_semibold, 10))
+
+        # Изображение
+        self.image_label_slider4 = QtWidgets.QLabel(page4)
+        self.image_label_slider4.setGeometry(QtCore.QRect(566, 90, 350, 60))
+        self.image_label_slider4.setScaledContents(True)  # Масштабирование
+        pixmap = QtGui.QPixmap("slider_4.1.jpg")
+        if pixmap.isNull():
+            pixmap = QtGui.QPixmap(200, 150)
+            pixmap.fill(QtCore.Qt.lightGray)
+        self.image_label_slider4.setPixmap(pixmap)
+        self.image_label_slider4.setCursor(QtCore.Qt.PointingHandCursor)
+        self.image_label_slider4.mousePressEvent = lambda event: self.show_image_window("slider_4.1.jpg")
+
+        label6_slider7_text = QtWidgets.QLabel(page4)
+        label6_slider7_text.setGeometry(QtCore.QRect(566, 200, 100, 27))
+        label6_slider7_text.setText("""
+                                                <p style='line-height:60%; margin:0;'>
+                                                    <span style='color:#383535;'>Пример:</span>
+                                                </p>
+                                                """)
+        label6_slider7_text.setFont(QtGui.QFont(font_family_semibold, 9))
+
+        self.image_label_slider42 = QtWidgets.QLabel(page4)
+        self.image_label_slider42.setGeometry(QtCore.QRect(566, 230, 350, 60))
+        self.image_label_slider42.setScaledContents(True)  # Масштабирование
+        pixmap = QtGui.QPixmap("slider_4.2.jpg")
+        if pixmap.isNull():
+            pixmap = QtGui.QPixmap(200, 150)
+            pixmap.fill(QtCore.Qt.lightGray)
+        self.image_label_slider42.setPixmap(pixmap)
+        self.image_label_slider42.setCursor(QtCore.Qt.PointingHandCursor)
+        self.image_label_slider42.mousePressEvent = lambda event: self.show_image_window("slider_4.2.jpg")
+
         self.stacked_widget.addWidget(page4)
+
+        # Страница 5
+        page5 = QtWidgets.QWidget()
+        label1_slider5_text = QtWidgets.QLabel("Возможные ошибки", page5)
+        label1_slider5_text.setGeometry(QtCore.QRect(30, 30, 250, 25))
+        label1_slider5_text.setFont(QtGui.QFont(font_family_semibold, 14))
+
+        label7_slider5_text = QtWidgets.QLabel(page5)
+        label7_slider5_text.setGeometry(QtCore.QRect(30, 60, 520, 117))
+        label7_slider5_text.setText("""
+                                                <p style='line-height:60%; margin:0;'>
+                                                    <span style='color:#383535;'>1. Если приложение перестало запускать браузер, то одной<br></span>
+                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;из самых частых причин возникновения данной ошибки<br></span>
+                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;является несовместимость версий вебдрайвера<br></span>
+                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;и браузера. Для устранения ошибки посмотрите версию<br></span>
+                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;вашего браузера после чего скачайте соответствующую<br></span>
+                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;ему версию вебдрайвера (Они должны совпадать<br></span>
+                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;или быть близкими).</span>
+                                                </p>
+                                                """)
+        label7_slider5_text.setFont(QtGui.QFont(font_family_regular, 9))
+
+        label4_slider5_text = QtWidgets.QLabel(page5)
+        label4_slider5_text.setGeometry(QtCore.QRect(30, 190, 500, 90))
+        label4_slider5_text.setText("""
+                                        <p style='line-height:60%; margin:0;'>
+                                             <span style='color:#383535;'>2. Если приложение не находит указанный вами патент,<br></span>
+                                             <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;то вероятно неправильно указан номер или он записан<br></span>
+                                             <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;в неправильном формате, обязательно сравните<br></span>
+                                             <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;написание номера с теми, что представлены<br></span>
+                                             <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;на скриншотах.</span>
+                                        </p>
+                                        """)
+        label4_slider5_text.setFont(QtGui.QFont(font_family_regular, 9))
+
+        label7_slider6_text = QtWidgets.QLabel(page5)
+        label7_slider6_text.setGeometry(QtCore.QRect(520, 60, 420, 73))
+        label7_slider6_text.setText("""
+                                                                <p style='line-height:60%; margin:0;'>
+                                                                    <span style='color:#383535;'>3. Если приложение указывает данные не того патента,<br></span>
+                                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;то вероятно был обнаружен ещё один патент с таким<br></span>
+                                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;номером и приложение выбрало не тот (Выбирается<br></span>
+                                                                    <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;первый из списка).</span>
+                                                                </p>
+                                                                """)
+        label7_slider6_text.setFont(QtGui.QFont(font_family_regular, 9))
+
+        label3_slider5_text = QtWidgets.QLabel("5/5", page5)
+        label3_slider5_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
+        label3_slider5_text.setFont(QtGui.QFont(font_family_semibold, 10))
+
+        label6_slider5_text = QtWidgets.QLabel(page5)
+        label6_slider5_text.setGeometry(QtCore.QRect(520, 140, 250, 30))
+        label6_slider5_text.setText("""
+                                                <p style='line-height:60%; margin:0;'>
+                                                    <span style='color:#383535;'>Пример такой ситуации:</span>
+                                                </p>
+                                                """)
+        label6_slider5_text.setFont(QtGui.QFont(font_family_semibold, 9))
+
+        # Изображение
+        self.image_label_slider5 = QtWidgets.QLabel(page5)
+        self.image_label_slider5.setGeometry(QtCore.QRect(520, 173, 240, 160))
+        self.image_label_slider5.setScaledContents(True)  # Масштабирование
+        pixmap = QtGui.QPixmap("slider_5.1.jpg")
+        if pixmap.isNull():
+            pixmap = QtGui.QPixmap(200, 150)
+            pixmap.fill(QtCore.Qt.lightGray)
+        self.image_label_slider5.setPixmap(pixmap)
+        self.image_label_slider5.setCursor(QtCore.Qt.PointingHandCursor)
+        self.image_label_slider5.mousePressEvent = lambda event: self.show_image_window("slider_5.1.jpg")
+
+        self.stacked_widget.addWidget(page5)
 
         # Кнопка "Вправо"
         self.right_btn = QtWidgets.QPushButton("", self)
         self.right_btn.setFixedSize(24, 24)
-        self.right_btn.setGeometry(480, 355, 24, 24)
+        self.right_btn.setGeometry(480, 375, 24, 24)
         self.right_btn.setStyleSheet("""
                     QPushButton {
                         border: none;
