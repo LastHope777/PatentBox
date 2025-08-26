@@ -7,6 +7,7 @@ import sys
 from PyQt5 import QtWidgets, QtGui
 
 from page_instruction import Ui_InstructionWindow
+from page_instruction_slider import Ui_InstructionSlider
 from patent_ptoject_design_main_menu import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
 from selenium.webdriver.chrome.service import Service
@@ -45,9 +46,27 @@ class HelpWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         # Кнопка "Назад"
         self.ui.back_btn.clicked.connect(self.go_back)
+        self.ui.continue_btn.clicked.connect(self.go_slider)
 
     def go_back(self):
         self.first_window = MyApp()
+        self.first_window.show()
+        self.close()
+
+    def go_slider(self):
+        self.slider = SliderWithHelp()
+        self.slider.show()
+        self.close()
+
+class SliderWithHelp(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_InstructionSlider()
+        self.ui.setupUi(self)
+        self.ui.back_btn.clicked.connect(self.go_back)
+
+    def go_back(self):
+        self.first_window = HelpWindow()
         self.first_window.show()
         self.close()
 
