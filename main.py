@@ -6,12 +6,14 @@ from docx import Document
 import sys
 from PyQt5 import QtWidgets, QtGui
 
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.edge.service import Service
+
 from page_instruction import Ui_InstructionWindow
 from page_instruction_slider import Ui_InstructionSlider
 from patent_ptoject_design_main_menu import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
 from PyQt5.QtWidgets import QFileDialog
 from patent_ptoject_design_number import Ui_SecondWindow
 
@@ -134,6 +136,8 @@ class WorkWithWord(QtWidgets.QMainWindow):
         path_to_input = self.ui.input_path_edit.text()
         path_to_driver = self.ui.adapter_path_edit.text()
 
+        browser = self.ui.get_selected_browser()
+
         selected_checkboxes = []
         if self.ui.cb1.isChecked():
             selected_checkboxes.append('1')
@@ -150,7 +154,7 @@ class WorkWithWord(QtWidgets.QMainWindow):
         if self.ui.cb7.isChecked():
             selected_checkboxes.append('7')
 
-        WordMode(path_to_input, selected_checkboxes, path_to_driver)
+        WordMode(path_to_input, selected_checkboxes, path_to_driver, browser)
         self.show_success_message()
 
 
@@ -163,7 +167,7 @@ class Patent:
         self.MPK = mpk
         self.date = date
 
-def WordMode(path_to_document, selected_checkboxes, path_to_driver):
+def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
     result = []
     document = Document(path_to_document)
     for table in document.tables:
@@ -209,7 +213,10 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver):
             for request in number_search:
                 url = 'https://www.fips.ru/iiss/'
                 service = Service(executable_path=path_to_driver)
-                driver = webdriver.Chrome(service=service)
+                if browser == "google":
+                    driver = webdriver.Chrome(service=service)
+                elif browser == "edge":
+                    driver = webdriver.Edge(service=service)
                 driver.get(url)
                 time.sleep(2)
                 patent_rus = driver.find_element(By.XPATH,
@@ -327,7 +334,10 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver):
                 cell_text = rows.cells[0].text
                 number_search.append(cell_text)
             service = Service(executable_path=path_to_driver)
-            driver = webdriver.Chrome(service=service)
+            if browser == "google":
+                driver = webdriver.Chrome(service=service)
+            elif browser == "edge":
+                driver = webdriver.Edge(service=service)
             for request in number_search:
                 driver.get(url)
                 time.sleep(2)
@@ -453,9 +463,11 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver):
                 cell_text = rows.cells[0].text
                 number_search.append(cell_text)
             for request in number_search:
-
                 service = Service(executable_path=path_to_driver)
-                driver = webdriver.Chrome(service=service)
+                if browser == "google":
+                    driver = webdriver.Chrome(service=service)
+                elif browser == "edge":
+                    driver = webdriver.Edge(service=service)
                 url = "https://patentscope.wipo.int/search/ru/search.jsf"
                 driver.get(url)
                 time.sleep(5)

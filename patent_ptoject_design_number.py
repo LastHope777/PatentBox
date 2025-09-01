@@ -197,7 +197,7 @@ class Ui_SecondWindow(object):
         self.cb1 = QtWidgets.QCheckBox("Рефераты российских изобретений")
         self.cb2 = QtWidgets.QCheckBox("Заявки на российские изобретения")
         self.cb3 = QtWidgets.QCheckBox("Тексты российских изобретений из 3-х последних бюллетеней")
-        self.cb4 = QtWidgets.QCheckBox("Формулы российских изобретений")
+        self.cb4 = QtWidgets.QCheckBox("Формулы российских полезных моделей")
         self.cb5 = QtWidgets.QCheckBox("Формулы российских ПМ из 3-х последних бюллетеней")
         self.cb6 = QtWidgets.QCheckBox("Перспективные российские изобретения")
         self.cb7 = QtWidgets.QCheckBox("ВЫДЕЛИТЬ ВСЁ")
@@ -224,6 +224,13 @@ class Ui_SecondWindow(object):
         self.label_footer.setStyleSheet("background-color: transparent;")
 
         MainWindow.setCentralWidget(self.centralwidget)
+
+    def get_selected_browser(self):
+        if self.radio_google.isChecked():
+            return "google"
+        elif self.radio_edge.isChecked():
+            return "edge"
+        return None
 
 
 if __name__ == "__main__":
