@@ -1,7 +1,6 @@
 import os
 
 from selenium import webdriver
-import time
 from docx import Document
 import sys
 from PyQt5 import QtWidgets, QtGui
@@ -9,6 +8,8 @@ from PyQt5 import QtWidgets, QtGui
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from page_instruction import Ui_InstructionWindow
 from page_instruction_slider import Ui_InstructionSlider
@@ -218,9 +219,9 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 elif browser == "edge":
                     driver = webdriver.Edge(service=service)
                 driver.get(url)
-                time.sleep(2)
-                patent_rus = driver.find_element(By.XPATH,
-                                                 '//*[@id="db-selection-form:j_idt74"]/div')
+                wait = WebDriverWait(driver, 10)
+                patent_rus = wait.until(
+                    EC.element_to_be_clickable((By.XPATH, '//*[@id="db-selection-form:j_idt74"]/div')))
                 patent_rus.click()
                 if '7' in selected_checkboxes:
                     patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:j_idt101"]')
@@ -251,20 +252,16 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                                                                    ':dbsGrid1checkbox"]')
                         patent_rus.click()
 
-                time.sleep(4)
-                button_search = driver.find_element(By.XPATH, '//*[@id="db-selection-form:button-set1"]/div[1]/input')
+                button_search = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="db-selection-form:button-set1"]/div[1]/input')))
                 button_search.click()
-                time.sleep(4)
-                main_area_request = driver.find_element(By.XPATH, '//*[@id="fields:1:j_idt109"]')
+                main_area_request = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="fields:1:j_idt109"]')))
                 main_area_request.click()
                 main_area_request.send_keys(request)
-                time.sleep(1)
-                button_search = driver.find_element(By.XPATH,
-                                                    '// *[ @ id = "searchForm"] / div[1] / div[1] / div[3] / div[1] / input')
+                button_search = wait.until(EC.element_to_be_clickable((By.XPATH,
+                                                    '// *[ @ id = "searchForm"] / div[1] / div[1] / div[3] / div[1] / input')))
                 button_search.click()
-                time.sleep(2)
-                result1 = driver.find_element(By.XPATH,
-                                              '/html/body/div[3]/div/div/div[1]/div[2]/div/form/div[3]/div/div/a/div[1]')
+                result1 = wait.until(EC.element_to_be_clickable((By.XPATH,
+                                              '/html/body/div[3]/div/div/div[1]/div[2]/div/form/div[3]/div/div/a/div[1]')))
                 result1.click()
 
 
@@ -286,7 +283,6 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                                           '// *[ @ id = "mainDoc"] / table[1] / tbody / tr / td[2] / table / tbody / '
                                           'tr[2] / td[1] / div / ul / li / a / span').text
                 date = driver.find_element(By.XPATH, '// *[ @ id = "bib"] / tbody / tr / td[1] / p[2] / b').text
-                time.sleep(1)
                 result.append(Patent(number, name, authors, mpk, date))
 
                 table_fips.add_row()
@@ -340,21 +336,19 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 driver = webdriver.Edge(service=service)
             for request in number_search:
                 driver.get(url)
-                time.sleep(2)
-                search_input = driver.find_element(By.XPATH,
-                                                   '//*[@id="layout"]/div[3]/div/div[3]/div[1]/div[1]/div[1]/input')
+                wait = WebDriverWait(driver, 10)
+                search_input = wait.until(EC.presence_of_element_located(
+                    (By.XPATH, '//*[@id="layout"]/div[3]/div/div[3]/div[1]/div[1]/div[1]/input')))
                 search_input.clear()
                 search_input.send_keys(request)
                 button_search_platform = driver.find_element(By.XPATH,
                                                               '//*[@id="layout"]/div[3]/div/div[2]/div/div/button')
                 button_search_platform.click()
-                time.sleep(2)
-                result_patent = driver.find_element(By.XPATH,
+                result_patent = wait.until(EC.element_to_be_clickable((By.XPATH,
                                                     '/html/body/div/div/div[3]/div/div[4]/div[4]/div/div['
-                                                    '2]/div/div/div/ul/li[1]/div[2]/div/div[1]/div/div')
+                                                    '2]/div/div/div/ul/li[1]/div[2]/div/div[1]/div/div')))
                 result_patent.click()
-                time.sleep(2)
-                country = driver.find_element(By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[1]/div[2]')
+                country = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[1]/div[2]')))
                 number1 = driver.find_element(By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[2]/div[2]')
                 number2 = driver.find_element(By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[3]/div[2]')
                 number = country.text + " " + number1.text + " " + number2.text
@@ -470,14 +464,14 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                     driver = webdriver.Edge(service=service)
                 url = "https://patentscope.wipo.int/search/ru/search.jsf"
                 driver.get(url)
-                time.sleep(5)
-                field_search = driver.find_element(By.XPATH, '//*[@id="simpleSearchForm:fpSearch:input"]')
+                wait = WebDriverWait(driver, 10)
+                field_search = wait.until(
+                    EC.element_to_be_clickable((By.XPATH, '//*[@id="simpleSearchForm:fpSearch:input"]')))
                 field_search.send_keys(request)
                 button_search_wipo = driver.find_element(By.XPATH,
                                                          '/html/body/div[2]/div[5]/div/div[2]/form/div/div[1]/div['
                                                          '2]/div/div/div[1]/div[2]/button')
                 button_search_wipo.click()
-                time.sleep(5)
 
                 try:
                     name = driver.find_element(By.XPATH,
@@ -529,9 +523,8 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                                                   '1]/a/span')
 
                     result2.click()
-                    time.sleep(4)
-                    number1 = driver.find_element(By.XPATH,
-                                                  '//*[@id="headerForm:headerFormContent"]/h1/div/div[1]').text
+                    number1 = wait.until(EC.presence_of_element_located((By.XPATH,
+                                                  '//*[@id="headerForm:headerFormContent"]/h1/div/div[1]'))).text
                     suffix1 = number1.index(". ") + 2
                     str1 = number1[suffix1:]
                     suffix2 = number1.index(" - ") - 3
