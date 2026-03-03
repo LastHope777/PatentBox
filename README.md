@@ -63,16 +63,23 @@
 ```
 PatentBox/
 ├── main.py
+├── paths.py
 ├── requirements.txt
-├── result.docx
+├── README.md
+├── LICENSE
+├── .gitignore
 ├── assets/
 │   ├── fonts/
 │   └── images/
 └── ui/
-    ├── patent_ptoject_design_main_menu.py
-    ├── patent_ptoject_design_number.py
+    ├── __init__.py
+    ├── design.py
     ├── page_instruction.py
-    └── page_instruction_slider.py
+    ├── page_instruction_slider.py
+    ├── patent_ptoject_design_main_menu.py
+    ├── patent_ptoject_design_main_menu.ui
+    ├── patent_ptoject_design_number.py
+    └── patent_project_design_number.ui
 ```
 ---
 ## ▶️ Запуск

@@ -13,10 +13,10 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from ui.page_instruction import Ui_InstructionWindow
 from ui.page_instruction_slider import Ui_InstructionSlider
-from ui.patent_ptoject_design_main_menu import Ui_MainWindow
+from ui.patent_project_design_main_menu import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QFileDialog
-from ui.patent_ptoject_design_number import Ui_SecondWindow
+from ui.patent_project_design_number import Ui_SecondWindow
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULT_DOCX = os.path.join(BASE_DIR, "result.docx")
