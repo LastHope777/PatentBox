@@ -11,13 +11,15 @@ from selenium.webdriver.edge.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from page_instruction import Ui_InstructionWindow
-from page_instruction_slider import Ui_InstructionSlider
-from patent_ptoject_design_main_menu import Ui_MainWindow
+from ui.page_instruction import Ui_InstructionWindow
+from ui.page_instruction_slider import Ui_InstructionSlider
+from ui.patent_ptoject_design_main_menu import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QFileDialog
-from patent_ptoject_design_number import Ui_SecondWindow
+from ui.patent_ptoject_design_number import Ui_SecondWindow
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RESULT_DOCX = os.path.join(BASE_DIR, "result.docx")
 
 PathToDriver = ""
 class MyApp(QtWidgets.QMainWindow):
@@ -172,6 +174,8 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
     result = []
     document = Document(path_to_document)
     for table in document.tables:
+        first_cell = table.cell(0, 0).text
+
         if (table.cell(0, 0).text == 'ФИПС'
                 or table.cell(0, 0).text == 'Фипс'
                 or table.cell(0, 0).text == 'фипс'):
@@ -185,7 +189,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 if len(words) > 0:
                     arr_number.append(words)
                     number_search.append(words[0])
-            document_result = Document("result.docx")
+            document_result = Document(RESULT_DOCX) if os.path.exists(RESULT_DOCX) else Document()
             first_empty_cell = 2
             table_fips = document_result.add_table(rows=2, cols=6)
             table_fips.cell(0, 0).text = 'Объект исследования, его составные части'
@@ -293,14 +297,14 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                     table_fips.cell(first_empty_cell, 4).text = mpk
                     table_fips.cell(first_empty_cell, 5).text = date
                 first_empty_cell += 1
-                document_result.save("result.docx")
+                document_result.save(RESULT_DOCX)
 
                 driver.quit()
 
         if table.cell(0, 0).text == 'Платформа' or table.cell(0, 0).text == 'платформа':
             url = "https://openstat.rospatent.gov.ru/patents"
             number_search = []
-            document_result = Document("result.docx")
+            document_result = Document(RESULT_DOCX) if os.path.exists(RESULT_DOCX) else Document()
             first_empty_cell = 2
             table_platform = document_result.add_table(rows=2, cols=6)
             table_platform.cell(0, 0).text = 'Объект исследования, его составные части'
@@ -416,7 +420,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                     table_platform.cell(first_empty_cell, 4).text = mpk
                     table_platform.cell(first_empty_cell, 5).text = date
                 first_empty_cell += 1
-                document_result.save("result.docx")
+                document_result.save(RESULT_DOCX)
 
             driver.quit()
 
@@ -425,7 +429,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 or table.cell(0, 0).text == 'Wipo'):
 
             number_search = []
-            document_result = Document("result.docx")
+            document_result = Document(RESULT_DOCX) if os.path.exists(RESULT_DOCX) else Document()
             first_empty_cell = 2
             table_wipo = document_result.add_table(rows=2, cols=6)
 
@@ -607,7 +611,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                     table_wipo.cell(first_empty_cell, 5).text = date
 
                 first_empty_cell += 1
-                document_result.save("result.docx")
+                document_result.save(RESULT_DOCX)
 
                 driver.quit()
 
@@ -617,7 +621,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    icon_path = os.path.join(os.getcwd(), "logo.png")
+    icon_path = os.path.join(BASE_DIR, "logo.png")
     app.setWindowIcon(QtGui.QIcon(icon_path))
     window = MyApp()
     window.show()

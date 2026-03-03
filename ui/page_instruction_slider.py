@@ -2,6 +2,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 import sys
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+IMAGES_DIR = os.path.join(BASE_DIR, "assets", "images").replace("\\", "/")
 
 class Ui_InstructionSlider(object):
     def __init__(self):
@@ -24,10 +26,10 @@ class Ui_InstructionSlider(object):
                 return fallback
             return QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
 
-        font_family_black = load_font(os.path.join(os.getcwd(), "Geologica-Black.ttf"))
-        font_family_bold = load_font(os.path.join(os.getcwd(), "Geologica_Auto-Bold.ttf"))
-        font_family_semibold = load_font(os.path.join(os.getcwd(), "Geologica-SemiBold.ttf"))
-        font_family_regular = load_font(os.path.join(os.getcwd(), "Geologica-Regular.ttf"))
+        font_family_black = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Black.ttf"))
+        font_family_bold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica_Auto-Bold.ttf"))
+        font_family_semibold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-SemiBold.ttf"))
+        font_family_regular = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Regular.ttf"))
 
         # Центральный виджет
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -48,7 +50,7 @@ class Ui_InstructionSlider(object):
         }
         """)
         # Стрелочка
-        icon_path = os.path.join(os.getcwd(), "Vector.png")
+        icon_path = os.path.join(BASE_DIR, "assets", "images", "Vector.png")
         icon = QtGui.QIcon(icon_path)
         self.back_btn.setIcon(icon)
         self.back_btn.setIconSize(QtCore.QSize(24, 24))
@@ -110,6 +112,7 @@ class ImageWindow(QtWidgets.QMainWindow):
 class SliderWidget(QtWidgets.QFrame):
 
     def __init__(self, parent=None):
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         super().__init__(parent)
         self.setStyleSheet("background-color: #F4F4F4; border-radius: 16px;")
 
@@ -122,16 +125,16 @@ class SliderWidget(QtWidgets.QFrame):
         self.left_btn = QtWidgets.QPushButton("", self)  # Пустой текст
         self.left_btn.setFixedSize(24, 24)  # Размер кнопки
         self.left_btn.setGeometry(422, 375, 24, 24)
-        self.left_btn.setStyleSheet("""
-            QPushButton {
+        self.left_btn.setStyleSheet(f"""
+            QPushButton {{
                 border: none;
-                background-image: url(arrow_left_regular.svg);
+                background-image: url({IMAGES_DIR}/arrow_left_regular.svg);
                 background-repeat: no-repeat;
                 background-position: center;
-            }
-            QPushButton:hover {
-                background-image: url(arrow_left_hover.svg);
-            }
+            }}
+            QPushButton:hover {{
+                background-image: url({IMAGES_DIR}/arrow_left_hover.svg);
+            }}
         """)
         self.left_btn.clicked.connect(self.prev_page)
 
@@ -141,10 +144,10 @@ class SliderWidget(QtWidgets.QFrame):
                 return fallback
             return QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
 
-        font_family_black = load_font(os.path.join(os.getcwd(), "Geologica-Black.ttf"))
-        font_family_bold = load_font(os.path.join(os.getcwd(), "Geologica_Auto-Bold.ttf"))
-        font_family_semibold = load_font(os.path.join(os.getcwd(), "Geologica-SemiBold.ttf"))
-        font_family_regular = load_font(os.path.join(os.getcwd(), "Geologica-Regular.ttf"))
+        font_family_black = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Black.ttf"))
+        font_family_bold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica_Auto-Bold.ttf"))
+        font_family_semibold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-SemiBold.ttf"))
+        font_family_regular = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Regular.ttf"))
 
         # Добавляем страницы в слайдер
         # Страница 1
@@ -173,13 +176,14 @@ class SliderWidget(QtWidgets.QFrame):
         self.image_label = QtWidgets.QLabel(page1)
         self.image_label.setGeometry(QtCore.QRect(592, 70, 340, 240))
         self.image_label.setScaledContents(True) # Масштабирование
-        pixmap = QtGui.QPixmap("slider_1.1.jpg")
+        pixmap = QtGui.QPixmap(os.path.join(BASE_DIR, "assets", "images", "slider_1.1.jpg"))
         if pixmap.isNull():
             pixmap = QtGui.QPixmap(200, 150)
             pixmap.fill(QtCore.Qt.lightGray)
         self.image_label.setPixmap(pixmap)
         self.image_label.setCursor(QtCore.Qt.PointingHandCursor)
-        self.image_label.mousePressEvent = lambda event: self.show_image_window("slider_1.1.jpg")
+        self.image_label.mousePressEvent = lambda event: self.show_image_window(os.path.join(BASE_DIR, "assets", "images", "slider_1.1.jpg"))
+
 
 
         self.stacked_widget.addWidget(page1)
@@ -216,13 +220,14 @@ class SliderWidget(QtWidgets.QFrame):
         self.image_label_slider2 = QtWidgets.QLabel(page2)
         self.image_label_slider2.setGeometry(QtCore.QRect(592, 70, 340, 240))
         self.image_label_slider2.setScaledContents(True) # Масштабирование
-        pixmap = QtGui.QPixmap("slider_2.1.jpg")
+        pixmap = QtGui.QPixmap(os.path.join(BASE_DIR, "assets", "images", "slider_2.1.jpg"))
         if pixmap.isNull():
             pixmap = QtGui.QPixmap(200, 150)
             pixmap.fill(QtCore.Qt.lightGray)
         self.image_label_slider2.setPixmap(pixmap)
         self.image_label_slider2.setCursor(QtCore.Qt.PointingHandCursor)
-        self.image_label_slider2.mousePressEvent = lambda event: self.show_image_window("slider_2.1.jpg")
+        self.image_label_slider2.mousePressEvent = lambda event: self.show_image_window(os.path.join(BASE_DIR, "assets", "images", "slider_2.1.jpg"))
+
 
 
         self.stacked_widget.addWidget(page2)
@@ -285,13 +290,14 @@ class SliderWidget(QtWidgets.QFrame):
         self.image_label_slider3 = QtWidgets.QLabel(page3)
         self.image_label_slider3.setGeometry(QtCore.QRect(566, 201, 350, 60))
         self.image_label_slider3.setScaledContents(True)  # Масштабирование
-        pixmap = QtGui.QPixmap("slider_3.1.jpg")
+        pixmap = QtGui.QPixmap(os.path.join(BASE_DIR, "assets", "images", "slider_3.1.jpg"))
         if pixmap.isNull():
             pixmap = QtGui.QPixmap(200, 150)
             pixmap.fill(QtCore.Qt.lightGray)
         self.image_label_slider3.setPixmap(pixmap)
         self.image_label_slider3.setCursor(QtCore.Qt.PointingHandCursor)
-        self.image_label_slider3.mousePressEvent = lambda event: self.show_image_window("slider_3.1.jpg")
+        self.image_label_slider3.mousePressEvent = lambda event: self.show_image_window(os.path.join(BASE_DIR, "assets", "images", "slider_3.1.jpg"))
+
 
         self.stacked_widget.addWidget(page3)
 
@@ -362,13 +368,14 @@ class SliderWidget(QtWidgets.QFrame):
         self.image_label_slider4 = QtWidgets.QLabel(page4)
         self.image_label_slider4.setGeometry(QtCore.QRect(566, 90, 350, 60))
         self.image_label_slider4.setScaledContents(True)  # Масштабирование
-        pixmap = QtGui.QPixmap("slider_4.1.jpg")
+        pixmap = QtGui.QPixmap(os.path.join(BASE_DIR, "assets", "images", "slider_4.1.jpg"))
         if pixmap.isNull():
             pixmap = QtGui.QPixmap(200, 150)
             pixmap.fill(QtCore.Qt.lightGray)
         self.image_label_slider4.setPixmap(pixmap)
         self.image_label_slider4.setCursor(QtCore.Qt.PointingHandCursor)
-        self.image_label_slider4.mousePressEvent = lambda event: self.show_image_window("slider_4.1.jpg")
+        self.image_label_slider4.mousePressEvent = lambda event: self.show_image_window(os.path.join(BASE_DIR, "assets", "images", "slider_4.1.jpg"))
+
 
         label6_slider7_text = QtWidgets.QLabel(page4)
         label6_slider7_text.setGeometry(QtCore.QRect(566, 200, 100, 27))
@@ -382,13 +389,14 @@ class SliderWidget(QtWidgets.QFrame):
         self.image_label_slider42 = QtWidgets.QLabel(page4)
         self.image_label_slider42.setGeometry(QtCore.QRect(566, 230, 350, 60))
         self.image_label_slider42.setScaledContents(True)  # Масштабирование
-        pixmap = QtGui.QPixmap("slider_4.2.jpg")
+        pixmap = QtGui.QPixmap(os.path.join(BASE_DIR, "assets", "images", "slider_4.2.jpg"))
         if pixmap.isNull():
             pixmap = QtGui.QPixmap(200, 150)
             pixmap.fill(QtCore.Qt.lightGray)
         self.image_label_slider42.setPixmap(pixmap)
         self.image_label_slider42.setCursor(QtCore.Qt.PointingHandCursor)
-        self.image_label_slider42.mousePressEvent = lambda event: self.show_image_window("slider_4.2.jpg")
+        self.image_label_slider42.mousePressEvent = lambda event: self.show_image_window(os.path.join(BASE_DIR, "assets", "images", "slider_4.2.jpg"))
+
 
         self.stacked_widget.addWidget(page4)
 
@@ -455,13 +463,14 @@ class SliderWidget(QtWidgets.QFrame):
         self.image_label_slider5 = QtWidgets.QLabel(page5)
         self.image_label_slider5.setGeometry(QtCore.QRect(520, 173, 240, 160))
         self.image_label_slider5.setScaledContents(True)  # Масштабирование
-        pixmap = QtGui.QPixmap("slider_5.1.jpg")
+        pixmap = QtGui.QPixmap(os.path.join(BASE_DIR, "assets", "images", "slider_5.1.jpg"))
         if pixmap.isNull():
             pixmap = QtGui.QPixmap(200, 150)
             pixmap.fill(QtCore.Qt.lightGray)
         self.image_label_slider5.setPixmap(pixmap)
         self.image_label_slider5.setCursor(QtCore.Qt.PointingHandCursor)
-        self.image_label_slider5.mousePressEvent = lambda event: self.show_image_window("slider_5.1.jpg")
+        self.image_label_slider5.mousePressEvent = lambda event: self.show_image_window(os.path.join(BASE_DIR, "assets", "images", "slider_5.1.jpg"))
+
 
         self.stacked_widget.addWidget(page5)
 
@@ -469,17 +478,17 @@ class SliderWidget(QtWidgets.QFrame):
         self.right_btn = QtWidgets.QPushButton("", self)
         self.right_btn.setFixedSize(24, 24)
         self.right_btn.setGeometry(480, 375, 24, 24)
-        self.right_btn.setStyleSheet("""
-                    QPushButton {
-                        border: none;
-                        background-image: url(arrow_right_regular.svg);
-                        background-repeat: no-repeat;
-                        background-position: center;
-                    }
-                    QPushButton:hover {
-                        background-image: url(arrow_right_hover.svg);
-                    }
-                """)
+        self.right_btn.setStyleSheet(f"""
+            QPushButton {{
+                border: none;
+                background-image: url({IMAGES_DIR}/arrow_right_regular.svg);
+                background-repeat: no-repeat;
+                background-position: center;
+            }}
+            QPushButton:hover {{
+                background-image: url({IMAGES_DIR}/arrow_right_hover.svg);
+            }}
+        """)
         self.right_btn.clicked.connect(self.next_page)
 
         # Обновляем видимость кнопок при старте

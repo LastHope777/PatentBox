@@ -1,2 +1,4 @@
-# Документы
+.venv
+.idea
+__pycache__
 *.docx

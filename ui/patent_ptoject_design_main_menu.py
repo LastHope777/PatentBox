@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QFontDatabase
 import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -16,9 +17,9 @@ class Ui_MainWindow(object):
         MainWindow.setStyleSheet("background-color: white;")
 
         # Загружаем кастомные шрифты
-        font_path_black = os.path.join(os.getcwd(), "Geologica-Black.ttf")
-        font_path_bold = os.path.join(os.getcwd(), "Geologica-Bold.ttf")
-        font_path_semibold = os.path.join(os.getcwd(), "Geologica-SemiBold.ttf")
+        font_path_black = os.path.join(BASE_DIR, "Geologica Black.ttf")
+        font_path_bold = os.path.join(BASE_DIR, "Geologica.ttf")
+        font_path_semibold = os.path.join(BASE_DIR, "Geologica Roman SemiBold.ttf")
 
         QFontDatabase.addApplicationFont(font_path_black)
         QFontDatabase.addApplicationFont(font_path_bold)
@@ -42,7 +43,7 @@ class Ui_MainWindow(object):
         self.label_top.setAlignment(QtCore.Qt.AlignCenter)
 
         # ✅ Применяем Semibold
-        font = QtGui.QFont("Geologica Semibold", 10)
+        font = QtGui.QFont("Geologica Roman SemiBold", 10)
         self.label_top.setFont(font)
 
         # Стиль
@@ -56,7 +57,7 @@ class Ui_MainWindow(object):
         """)
 
         # Шрифт
-        font = QtGui.QFont("Geologica Semibold", 12)
+        font = QtGui.QFont("Geologica Roman SemiBold", 12)
         self.label_top.setFont(font)
 
         # Отступы: добавляем +4 пикселя снизу для выравнивания
@@ -137,7 +138,7 @@ class Ui_MainWindow(object):
                 """)
         self.label_title.setWordWrap(True)
         self.label_title.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont("Geologica Semibold", 9)
+        font = QtGui.QFont("Geologica Roman SemiBold", 9)
         self.label_title.setFont(font)
 
         # ✅ Убираем белый фон

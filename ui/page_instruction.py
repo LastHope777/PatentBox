@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Ui_InstructionWindow(object):
     def __init__(self):
@@ -23,11 +24,10 @@ class Ui_InstructionWindow(object):
                 return fallback
             return QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
 
-        font_family_black = load_font(os.path.join(os.getcwd(), "Geologica-Black.ttf"))
-        font_family_bold = load_font(os.path.join(os.getcwd(), "Geologica_Auto-Bold.ttf"))
-        font_family_semibold = load_font(os.path.join(os.getcwd(), "Geologica-SemiBold.ttf"))
-        font_family_regular = load_font(os.path.join(os.getcwd(), "Geologica-Regular.ttf"))
-
+        font_family_black = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Black.ttf"))
+        font_family_bold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica_Auto-Bold.ttf"))
+        font_family_semibold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-SemiBold.ttf"))
+        font_family_regular = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Regular.ttf"))
 
         # Центральный виджет
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -48,7 +48,7 @@ class Ui_InstructionWindow(object):
         }
         """)
         # Стрелочка
-        icon_path = os.path.join(os.getcwd(), "Vector.png")
+        icon_path = os.path.join(BASE_DIR, "assets", "images", "Vector.png")
         icon = QtGui.QIcon(icon_path)
         self.back_btn.setIcon(icon)
         self.back_btn.setIconSize(QtCore.QSize(24, 24))
@@ -192,7 +192,7 @@ class Ui_InstructionWindow(object):
                 }
                 """)
         # Стрелочка
-        icon_path = os.path.join(os.getcwd(), "Arrow_read.png")
+        icon_path = os.path.join(BASE_DIR, "assets", "images", "Arrow_read.png")
         icon = QtGui.QIcon(icon_path)
         self.continue_btn.setIcon(icon)
         self.continue_btn.setIconSize(QtCore.QSize(500, 1000))
