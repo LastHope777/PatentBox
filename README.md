@@ -1,6 +1,6 @@
 # 📦 ПатентБокс
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)
 ![PyQt5](https://img.shields.io/badge/PyQt5-5.15-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
@@ -14,6 +14,11 @@
 - ⚡️ удобный интерфейс с управлением в один клик.
 
 ---
+## 🌐 Поддерживаемые источники
+- 🔍 **ФИПС** — поисковая система Федерального института промышленной собственности
+- 🔍 **Платформа Роспатента** — поисковая платформа Роспатента
+- 🔍 **WIPO Patentscope** — международная база патентов
+---
 
 ## 📸 Скриншоты
 
@@ -26,9 +31,10 @@
 ---
 
 ## 🛠️ Технологии
-- [Python 3.10+](https://www.python.org/)  
+- [Python 3.11+](https://www.python.org/)  
 - [PyQt5](https://pypi.org/project/PyQt5/)  
 - [Selenium](https://www.selenium.dev/) (для автоматизации браузера)  
+- [python-docx](https://python-docx.readthedocs.io/) (для работы с .docx файлами)
 
 ---
 
@@ -36,8 +42,8 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/yourusername/patentbox.git
-   cd patentbox
+   git clone https://github.com/LastHope777/PatentBox.git
+   cd PatentBox
    ```
 
 2. Создайте и активируйте виртуальное окружение:
@@ -53,7 +59,22 @@
    ```
 
 ---
-
+## 📁 Структура проекта
+```
+PatentBox/
+├── main.py
+├── requirements.txt
+├── result.docx
+├── assets/
+│   ├── fonts/
+│   └── images/
+└── ui/
+    ├── patent_ptoject_design_main_menu.py
+    ├── patent_ptoject_design_number.py
+    ├── page_instruction.py
+    └── page_instruction_slider.py
+```
+---
 ## ▶️ Запуск
 
 ```bash
@@ -65,23 +86,7 @@ python main.py
 ## ⚙️ Настройки
 - **Веб-драйвер**: путь к `chromedriver.exe` или `msedgedriver.exe` указывается через кнопку **Выбрать файл**.  
 - **Файлы данных**: загружаются через отдельный блок интерфейса в формате `.docx`.  
-- **Браузер**: выбирается радиокнопкой (**Google** или **Microsoft Edge**).  
-
----
-
-## 🤝 Вклад в проект
-
-Если хотите помочь в развитии проекта:
-1. Сделайте форк 
-2. Создайте ветку:
-   ```bash
-   git checkout -b feature/my-feature
-   ```
-3. Сделайте коммит:
-   ```bash
-   git commit -m "Добавлена новая функция"
-   ```
-4. Отправьте Pull Request 🚀
+- **Браузер**: выбирается радиокнопкой (**Google** или **Microsoft Edge**).
 
 ---
 
