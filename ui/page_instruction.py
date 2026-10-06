@@ -1,6 +1,11 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 
+try:
+    from ui.fonts import load_app_fonts, make_font
+except ImportError:  # запуск файла напрямую из папки ui
+    from fonts import load_app_fonts, make_font
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Ui_InstructionWindow(object):
@@ -17,17 +22,12 @@ class Ui_InstructionWindow(object):
         MainWindow.setWindowTitle("Патент Бокс")
         MainWindow.setStyleSheet("background-color: white;")
 
-        # === Подключение шрифтов ===
-        def load_font(path, fallback="Arial"):
-            font_id = QtGui.QFontDatabase.addApplicationFont(path)
-            if font_id == -1:
-                return fallback
-            return QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
-
-        font_family_black = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Black.ttf"))
-        font_family_bold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica_Auto-Bold.ttf"))
-        font_family_semibold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-SemiBold.ttf"))
-        font_family_regular = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Regular.ttf"))
+        # === Подключение шрифтов (общий загрузчик, см. ui/fonts.py) ===
+        fonts = load_app_fonts()
+        font_family_black = fonts["black"]
+        font_family_bold = fonts["auto_bold"]
+        font_family_semibold = fonts["semibold"]
+        font_family_regular = fonts["regular"]
 
         # Центральный виджет
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -36,7 +36,7 @@ class Ui_InstructionWindow(object):
         # Кнопка "Назад"
         self.back_btn = QtWidgets.QPushButton("Назад", self.centralwidget)
         self.back_btn.setGeometry(30, 30, 138, 50)
-        self.back_btn.setFont(QtGui.QFont(font_family_semibold, 10))
+        self.back_btn.setFont(make_font("semibold", 10))
         self.back_btn.setStyleSheet("""
         QPushButton {
             background-color: #BEC2FF;
@@ -64,7 +64,7 @@ class Ui_InstructionWindow(object):
         """)
         self.label_title.setWordWrap(True)
         self.label_title.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont("Geologica Black", 38)
+        font = make_font("black", 38)
         self.label_title.setFont(font)
         # ✅ Убираем белый фон
         self.label_title.setStyleSheet("background-color: transparent;")
@@ -80,7 +80,7 @@ class Ui_InstructionWindow(object):
         """)
         self.label_title_purposition.setWordWrap(True)
         self.label_title_purposition.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont("Geologica SemiBold", 16)
+        font = make_font("semibold", 16)
         self.label_title_purposition.setFont(font)
         # ✅ Убираем белый фон
         self.label_title_purposition.setStyleSheet("background-color: transparent;")
@@ -99,7 +99,7 @@ class Ui_InstructionWindow(object):
                        """)
         self.label_title_text.setWordWrap(True)
         self.label_title_text.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont(font_family_regular, 12)
+        font = make_font("regular", 12)
         self.label_title_text.setFont(font)
         # ✅ Убираем белый фон
         self.label_title_text.setStyleSheet("background-color: transparent;")
@@ -115,7 +115,7 @@ class Ui_InstructionWindow(object):
               """)
         self.label_title_source.setWordWrap(True)
         self.label_title_source.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont("Geologica SemiBold", 16)
+        font = make_font("semibold", 16)
         self.label_title_source.setFont(font)
         # ✅ Убираем белый фон
         self.label_title_source.setStyleSheet("background-color: transparent;")
@@ -133,7 +133,7 @@ class Ui_InstructionWindow(object):
                         """)
         self.label_title_source_text.setWordWrap(True)
         self.label_title_source_text.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont(font_family_regular, 12)
+        font = make_font("regular", 12)
         self.label_title_source_text.setFont(font)
         # ✅ Убираем белый фон
         self.label_title_source_text.setStyleSheet("background-color: transparent;")
@@ -150,7 +150,7 @@ class Ui_InstructionWindow(object):
               """)
         self.label_title_requirements.setWordWrap(True)
         self.label_title_requirements.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont("Geologica SemiBold", 16)
+        font = make_font("semibold", 16)
         self.label_title_requirements.setFont(font)
         # ✅ Убираем белый фон
         self.label_title_requirements.setStyleSheet("background-color: transparent;")
@@ -172,7 +172,7 @@ class Ui_InstructionWindow(object):
                         """)
         self.label_title_requirements_text.setWordWrap(True)
         self.label_title_requirements_text.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont(font_family_regular, 12)
+        font = make_font("regular", 12)
         self.label_title_requirements_text.setFont(font)
         # ✅ Убираем белый фон
         self.label_title_requirements_text.setStyleSheet("background-color: transparent;")
@@ -180,7 +180,7 @@ class Ui_InstructionWindow(object):
         # Кнопка "ЧИТАТЬ"
         self.continue_btn = QtWidgets.QPushButton("ЧИТАТЬ   ", self.centralwidget)
         self.continue_btn.setGeometry(522, 589, 264, 50)
-        self.continue_btn.setFont(QtGui.QFont(font_family_bold, 12))
+        self.continue_btn.setFont(make_font("auto_bold", 12))
         self.continue_btn.setStyleSheet("""
                 QPushButton {
                     background-color: rgba(255, 183, 230, 1);
@@ -211,7 +211,7 @@ class Ui_InstructionWindow(object):
         """)
         self.label_footer.setWordWrap(True)
         self.label_footer.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        self.label_footer.setFont(QtGui.QFont(font_family_semibold, 9))
+        self.label_footer.setFont(make_font("semibold", 9))
         self.label_footer.setStyleSheet("background-color: transparent;")
 
         MainWindow.setCentralWidget(self.centralwidget)

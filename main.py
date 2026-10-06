@@ -1,4 +1,5 @@
 import os
+import time
 
 from selenium import webdriver
 from docx import Document
@@ -17,6 +18,9 @@ from ui.patent_project_design_main_menu import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QFileDialog
 from ui.patent_project_design_number import Ui_SecondWindow
+from holder_parser import get_patent_holder
+from paths import IMG_LOGO
+from ui.fonts import load_app_fonts
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULT_DOCX = os.path.join(BASE_DIR, "result.docx")
@@ -163,10 +167,10 @@ class WorkWithWord(QtWidgets.QMainWindow):
 
 class Patent:
 
-    def __init__(self, number, name, authors, mpk, date):
+    def __init__(self, number, name, holder, mpk, date):
         self.number = number
         self.name = name
-        self.authors = authors
+        self.holder = holder  # патентообладатель (или заявитель), НЕ авторы
         self.MPK = mpk
         self.date = date
 
@@ -230,6 +234,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 if '7' in selected_checkboxes:
                     patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:j_idt101"]')
                     patent_rus.click()
+
                 else:
                     if '1' in selected_checkboxes:
                         patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:dbsGrid1:0'
@@ -255,9 +260,10 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                         patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:dbsGrid1:5'
                                                                    ':dbsGrid1checkbox"]')
                         patent_rus.click()
-
+                time.sleep(1)
                 button_search = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="db-selection-form:button-set1"]/div[1]/input')))
                 button_search.click()
+
                 main_area_request = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="fields:1:j_idt109"]')))
                 main_area_request.click()
                 main_area_request.send_keys(request)
@@ -282,18 +288,19 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 count += 1
                 name = driver.find_element(By.XPATH,
                                            '/html/body/div[3]/div/div/div[1]/div[2]/form/div/div/div[2]/div/div/p/b').text
-                authors = driver.find_element(By.XPATH, '// *[ @ id = "bibl"] / p[1] / b').text
+                # p[1] в #bibl — это (72) Авторы, поэтому ищем (73) Патентообладатель по подписи
+                holder = get_patent_holder(driver)
                 mpk = driver.find_element(By.XPATH,
                                           '// *[ @ id = "mainDoc"] / table[1] / tbody / tr / td[2] / table / tbody / '
                                           'tr[2] / td[1] / div / ul / li / a / span').text
                 date = driver.find_element(By.XPATH, '// *[ @ id = "bib"] / tbody / tr / td[1] / p[2] / b').text
-                result.append(Patent(number, name, authors, mpk, date))
+                result.append(Patent(number, name, holder, mpk, date))
 
                 table_fips.add_row()
                 for _ in table_fips.rows[1:]:
                     table_fips.cell(first_empty_cell, 1).text = number
                     table_fips.cell(first_empty_cell, 2).text = name
-                    table_fips.cell(first_empty_cell, 3).text = authors
+                    table_fips.cell(first_empty_cell, 3).text = holder
                     table_fips.cell(first_empty_cell, 4).text = mpk
                     table_fips.cell(first_empty_cell, 5).text = date
                 first_empty_cell += 1
@@ -359,42 +366,8 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 name = driver.find_element(By.XPATH,
                                            '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div[3]/div/div['
                                            '1]/div/div[1]/div[1]/h1').text
-                try:
-                    # Патентообладатель
-                    try:
-                        authors = driver.find_element(By.XPATH,
-                                                      '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div['
-                                                      '3]/div/div[1]/div/div[1]/div[2]/div[6]/div[3]/ul').text
-                    except:
-                        authors = driver.find_element(By.XPATH,
-                                                      '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div['
-                                                      '3]/div/div[1]/div/div[1]/div[2]/div[5]/div[3]/ul').text
-                except:
-                    try:
-                        # Заявитель
-                        try:
-                            authors = driver.find_element(By.XPATH,
-                                                          '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div['
-                                                          '3]/div/div[1]/div/div[1]/div[2]/div[4]/div[3]/ul').text
-                        except:
-                            authors = driver.find_element(By.XPATH,
-                                                          '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div['
-                                                          '3]/div/div[1]/div/div[1]/div[2]/div[3]/div[3]/ul').text
-                    except:
-                        # Автор
-                        try:
-                            authors = driver.find_element(By.XPATH,
-                                                          '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div['
-                                                          '3]/div/div[1]/div/div[1]/div[2]/div[3]/div[3]/ul').text
-                        except:
-                            try:
-                                authors = driver.find_element(By.XPATH,
-                                                              '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div['
-                                                              '3]/div/div[1]/div/div[1]/div[2]/div[4]/div[3]/ul').text
-                            except:
-                                authors = driver.find_element(By.XPATH,
-                                                              '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div['
-                                                              '3]/div/div[1]/div/div[1]/div[2]/div[5]/div[3]/ul').text
+                # Патентообладатель (ищем по подписи поля, а не по позиции)
+                holder = get_patent_holder(driver)
                 mpk_text = driver.find_element(By.XPATH,
                                           '//*[@id="doc-biblio"]/div[2]/div[3]/div[2]').text
                 if mpk_text == "МПК":
@@ -411,12 +384,12 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                     date = driver.find_element(By.XPATH,
                                                '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div[3]/div/div['
                                                '1]/div/div[1]/div[1]/div[4]/div[4]').text
-                result.append(Patent(number, name, authors, mpk, date))
+                result.append(Patent(number, name, holder, mpk, date))
                 table_platform.add_row()
                 for _ in table_platform.rows[1:]:
                     table_platform.cell(first_empty_cell, 1).text = number
                     table_platform.cell(first_empty_cell, 2).text = name
-                    table_platform.cell(first_empty_cell, 3).text = authors
+                    table_platform.cell(first_empty_cell, 3).text = holder
                     table_platform.cell(first_empty_cell, 4).text = mpk
                     table_platform.cell(first_empty_cell, 5).text = date
                 first_empty_cell += 1
@@ -485,22 +458,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                     number = request
                     name = str3
 
-                    try:
-                        authors = driver.find_element(By.XPATH,
-                                                      '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                      '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                      '10]/span[2]/span').text
-                    except:
-                        try:
-                            authors = driver.find_element(By.XPATH,
-                                                          '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                          '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                          '9]/span[2]/span').text
-                        except:
-                            authors = driver.find_element(By.XPATH,
-                                                          '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                          '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                          '11]/span[2]/span').text
+                    holder = get_patent_holder(driver)
 
                     try:
                         mpk = driver.find_element(By.XPATH,
@@ -555,22 +513,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                     str3 = name[suffix1:]
                     number = str2 + " " + number2
                     name = str3
-                    try:
-                        authors = driver.find_element(By.XPATH,
-                                                      '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                      '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                      '10]/span[2]/span').text
-                    except:
-                        try:
-                            authors = driver.find_element(By.XPATH,
-                                                          '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                          '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                          '9]/span[2]/span').text
-                        except:
-                            authors = driver.find_element(By.XPATH,
-                                                          '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                          '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                          '11]/span[2]/span').text
+                    holder = get_patent_holder(driver)
 
                     try:
                         mpk = driver.find_element(By.XPATH,
@@ -590,13 +533,10 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                     date = driver.find_element(By.XPATH,
                                                '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
                                                '1]/div/div/div[2]/div/div[1]/div[5]/span[2]').text
-                result.append(Patent(number, name, authors, mpk, date))
+                result.append(Patent(number, name, holder, mpk, date))
 
                 table_wipo.add_row()
                 if mpk == date:
-                    authors = driver.find_element(By.XPATH,
-                                              '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
-                                              '1]/div/div/div[2]/div/div[1]/div[7]/span[2]/span/ul').text
                     mpk = driver.find_element(By.XPATH,
                                               '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
                                               '1]/div/div/div[2]/div/div[1]/div[5]/span[2]/div/div[1]').text
@@ -606,7 +546,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 for _ in table_wipo.rows[1:]:
                     table_wipo.cell(first_empty_cell, 1).text = number
                     table_wipo.cell(first_empty_cell, 2).text = name
-                    table_wipo.cell(first_empty_cell, 3).text = authors
+                    table_wipo.cell(first_empty_cell, 3).text = holder
                     table_wipo.cell(first_empty_cell, 4).text = mpk
                     table_wipo.cell(first_empty_cell, 5).text = date
 
@@ -621,8 +561,8 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    icon_path = os.path.join(BASE_DIR, "logo.png")
-    app.setWindowIcon(QtGui.QIcon(icon_path))
+    load_app_fonts()  # регистрируем шрифты Geologica один раз, до создания окон
+    app.setWindowIcon(QtGui.QIcon(IMG_LOGO))
     window = MyApp()
     window.show()
     sys.exit(app.exec_())

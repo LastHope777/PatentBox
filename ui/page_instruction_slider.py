@@ -1,5 +1,10 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import os
+
+try:
+    from ui.fonts import load_app_fonts, make_font
+except ImportError:  # запуск файла напрямую из папки ui
+    from fonts import load_app_fonts, make_font
 import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,17 +24,12 @@ class Ui_InstructionSlider(object):
         MainWindow.setWindowTitle("Патент Бокс")
         MainWindow.setStyleSheet("background-color: white;")
 
-        # === Подключение шрифтов ===
-        def load_font(path, fallback="Arial"):
-            font_id = QtGui.QFontDatabase.addApplicationFont(path)
-            if font_id == -1:
-                return fallback
-            return QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
-
-        font_family_black = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Black.ttf"))
-        font_family_bold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica_Auto-Bold.ttf"))
-        font_family_semibold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-SemiBold.ttf"))
-        font_family_regular = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Regular.ttf"))
+        # === Подключение шрифтов (общий загрузчик, см. ui/fonts.py) ===
+        fonts = load_app_fonts()
+        font_family_black = fonts["black"]
+        font_family_bold = fonts["auto_bold"]
+        font_family_semibold = fonts["semibold"]
+        font_family_regular = fonts["regular"]
 
         # Центральный виджет
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -38,7 +38,7 @@ class Ui_InstructionSlider(object):
         # Кнопка "Назад"
         self.back_btn = QtWidgets.QPushButton("Назад", self.centralwidget)
         self.back_btn.setGeometry(30, 30, 138, 50)
-        self.back_btn.setFont(QtGui.QFont(font_family_semibold, 10))
+        self.back_btn.setFont(make_font("semibold", 10))
         self.back_btn.setStyleSheet("""
         QPushButton {
             background-color: #BEC2FF;
@@ -66,7 +66,7 @@ class Ui_InstructionSlider(object):
         """)
         self.label_title.setWordWrap(True)
         self.label_title.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont("Geologica Black", 38)
+        font = make_font("black", 38)
         self.label_title.setFont(font)
         # ✅ Убираем белый фон
         self.label_title.setStyleSheet("background-color: transparent;")
@@ -87,7 +87,7 @@ class Ui_InstructionSlider(object):
         """)
         self.label_footer.setWordWrap(True)
         self.label_footer.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        self.label_footer.setFont(QtGui.QFont(font_family_semibold, 9))
+        self.label_footer.setFont(make_font("semibold", 9))
         self.label_footer.setStyleSheet("background-color: transparent;")
 
         MainWindow.setCentralWidget(self.centralwidget)
@@ -138,16 +138,11 @@ class SliderWidget(QtWidgets.QFrame):
         """)
         self.left_btn.clicked.connect(self.prev_page)
 
-        def load_font(path, fallback="Arial"):
-            font_id = QtGui.QFontDatabase.addApplicationFont(path)
-            if font_id == -1:
-                return fallback
-            return QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
-
-        font_family_black = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Black.ttf"))
-        font_family_bold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica_Auto-Bold.ttf"))
-        font_family_semibold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-SemiBold.ttf"))
-        font_family_regular = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Regular.ttf"))
+        fonts = load_app_fonts()
+        font_family_black = fonts["black"]
+        font_family_bold = fonts["auto_bold"]
+        font_family_semibold = fonts["semibold"]
+        font_family_regular = fonts["regular"]
 
         # Добавляем страницы в слайдер
         # Страница 1
@@ -155,7 +150,7 @@ class SliderWidget(QtWidgets.QFrame):
 
         label1_text = QtWidgets.QLabel("Шаг 1.", page1)
         label1_text.setGeometry(QtCore.QRect(30, 30, 90, 25))
-        label1_text.setFont(QtGui.QFont(font_family_semibold, 14))
+        label1_text.setFont(make_font("semibold", 14))
 
         label2_text = QtWidgets.QLabel(page1)
         label2_text.setGeometry(QtCore.QRect(30, 50, 600, 100))
@@ -166,11 +161,11 @@ class SliderWidget(QtWidgets.QFrame):
             <span style='color:#383535;'>После этого необходимо нажать на кнопку «НАЧАТЬ РАБОТУ».</span>
         </p>
         """)
-        label2_text.setFont(QtGui.QFont(font_family_regular, 10))
+        label2_text.setFont(make_font("regular", 10))
         label2_text.setStyleSheet("background-color: transparent;")
         label3_text = QtWidgets.QLabel("1/5", page1)
         label3_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
-        label3_text.setFont(QtGui.QFont(font_family_semibold, 10))
+        label3_text.setFont(make_font("semibold", 10))
 
         # Изображение
         self.image_label = QtWidgets.QLabel(page1)
@@ -192,7 +187,7 @@ class SliderWidget(QtWidgets.QFrame):
         page2 = QtWidgets.QWidget()
         label1_slider2_text = QtWidgets.QLabel("Шаг 2.", page2)
         label1_slider2_text.setGeometry(QtCore.QRect(30, 30, 90, 25))
-        label1_slider2_text.setFont(QtGui.QFont(font_family_semibold, 14))
+        label1_slider2_text.setFont(make_font("semibold", 14))
 
         label2_slider2_text = QtWidgets.QLabel(page2)
         label2_slider2_text.setGeometry(QtCore.QRect(30, 60, 600, 234))
@@ -210,11 +205,11 @@ class SliderWidget(QtWidgets.QFrame):
                     <span style='color:#383535;'>система ФИПС</span>
                 </p>
                 """)
-        label2_slider2_text.setFont(QtGui.QFont(font_family_regular, 10))
+        label2_slider2_text.setFont(make_font("regular", 10))
 
         label3_slider2_text = QtWidgets.QLabel("2/5", page2)
         label3_slider2_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
-        label3_slider2_text.setFont(QtGui.QFont(font_family_semibold, 10))
+        label3_slider2_text.setFont(make_font("semibold", 10))
 
         # Изображение
         self.image_label_slider2 = QtWidgets.QLabel(page2)
@@ -236,7 +231,7 @@ class SliderWidget(QtWidgets.QFrame):
         page3 = QtWidgets.QWidget()
         label1_slider3_text = QtWidgets.QLabel("Шаг 3. Правильное оформление входящих данных", page3)
         label1_slider3_text.setGeometry(QtCore.QRect(30, 30, 630, 25))
-        label1_slider3_text.setFont(QtGui.QFont(font_family_semibold, 14))
+        label1_slider3_text.setFont(make_font("semibold", 14))
 
         label2_slider3_text = QtWidgets.QLabel(page3)
         label2_slider3_text.setGeometry(QtCore.QRect(30, 60, 480, 105))
@@ -249,7 +244,7 @@ class SliderWidget(QtWidgets.QFrame):
                             <span style='color:#383535;'>данные в формате.docx</span>
                         </p>
                         """)
-        label2_slider3_text.setFont(QtGui.QFont(font_family_regular, 9))
+        label2_slider3_text.setFont(make_font("regular", 9))
 
         label4_slider3_text = QtWidgets.QLabel(page3)
         label4_slider3_text.setGeometry(QtCore.QRect(30, 170, 500, 28))
@@ -258,7 +253,7 @@ class SliderWidget(QtWidgets.QFrame):
                             <span style='color:#383535;'>Оформление входящих данных для поисковой системы ФИПС:</span>
                         </p>
                         """)
-        label4_slider3_text.setFont(QtGui.QFont(font_family_semibold, 9))
+        label4_slider3_text.setFont(make_font("semibold", 9))
 
         label5_slider3_text = QtWidgets.QLabel(page3)
         label5_slider3_text.setGeometry(QtCore.QRect(30, 203, 520, 89))
@@ -271,7 +266,7 @@ class SliderWidget(QtWidgets.QFrame):
                             <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;(Только цифры).</span>
                         </p>
                         """)
-        label5_slider3_text.setFont(QtGui.QFont(font_family_regular, 9))
+        label5_slider3_text.setFont(make_font("regular", 9))
 
         label6_slider3_text = QtWidgets.QLabel(page3)
         label6_slider3_text.setGeometry(QtCore.QRect(566, 170, 100, 27))
@@ -280,11 +275,11 @@ class SliderWidget(QtWidgets.QFrame):
                                     <span style='color:#383535;'>Пример:</span>
                                 </p>
                                 """)
-        label6_slider3_text.setFont(QtGui.QFont(font_family_semibold, 9))
+        label6_slider3_text.setFont(make_font("semibold", 9))
 
         label3_slider3_text = QtWidgets.QLabel("3/5", page3)
         label3_slider3_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
-        label3_slider3_text.setFont(QtGui.QFont(font_family_semibold, 10))
+        label3_slider3_text.setFont(make_font("semibold", 10))
 
         # Изображение
         self.image_label_slider3 = QtWidgets.QLabel(page3)
@@ -305,7 +300,7 @@ class SliderWidget(QtWidgets.QFrame):
         page4 = QtWidgets.QWidget()
         label1_slider4_text = QtWidgets.QLabel("Шаг 3. Правильное оформление входящих данных", page4)
         label1_slider4_text.setGeometry(QtCore.QRect(30, 30, 630, 25))
-        label1_slider4_text.setFont(QtGui.QFont(font_family_semibold, 14))
+        label1_slider4_text.setFont(make_font("semibold", 14))
 
         label2_slider4_text = QtWidgets.QLabel(page4)
         label2_slider4_text.setGeometry(QtCore.QRect(30, 60, 560, 45))
@@ -314,7 +309,7 @@ class SliderWidget(QtWidgets.QFrame):
                                     <span style='color:#383535;'>Оформление входящих данных для поисковой<br>платформы Роспатента:</span>
                                 </p>
                                 """)
-        label2_slider4_text.setFont(QtGui.QFont(font_family_semibold, 9))
+        label2_slider4_text.setFont(make_font("semibold", 9))
 
         label7_slider4_text = QtWidgets.QLabel(page4)
         label7_slider4_text.setGeometry(QtCore.QRect(30, 105, 520, 89))
@@ -327,7 +322,7 @@ class SliderWidget(QtWidgets.QFrame):
                                             <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;(Вместе с кодом страны и кодом типа документа).</span>
                                         </p>
                                         """)
-        label7_slider4_text.setFont(QtGui.QFont(font_family_regular, 9))
+        label7_slider4_text.setFont(make_font("regular", 9))
 
         label4_slider4_text = QtWidgets.QLabel(page4)
         label4_slider4_text.setGeometry(QtCore.QRect(30, 200, 500, 28))
@@ -336,7 +331,7 @@ class SliderWidget(QtWidgets.QFrame):
                                     <span style='color:#383535;'>Оформление входящих данных для Patentscope:</span>
                                 </p>
                                 """)
-        label4_slider4_text.setFont(QtGui.QFont(font_family_semibold, 9))
+        label4_slider4_text.setFont(make_font("semibold", 9))
 
         label5_slider4_text = QtWidgets.QLabel(page4)
         label5_slider4_text.setGeometry(QtCore.QRect(30, 233, 520, 89))
@@ -349,7 +344,7 @@ class SliderWidget(QtWidgets.QFrame):
                                     <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;(Только цифры)</span>
                                 </p>
                                 """)
-        label5_slider4_text.setFont(QtGui.QFont(font_family_regular, 9))
+        label5_slider4_text.setFont(make_font("regular", 9))
 
         label6_slider4_text = QtWidgets.QLabel(page4)
         label6_slider4_text.setGeometry(QtCore.QRect(566, 60, 100, 27))
@@ -358,11 +353,11 @@ class SliderWidget(QtWidgets.QFrame):
                                             <span style='color:#383535;'>Пример:</span>
                                         </p>
                                         """)
-        label6_slider4_text.setFont(QtGui.QFont(font_family_semibold, 9))
+        label6_slider4_text.setFont(make_font("semibold", 9))
 
         label3_slider4_text = QtWidgets.QLabel("4/5", page4)
         label3_slider4_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
-        label3_slider4_text.setFont(QtGui.QFont(font_family_semibold, 10))
+        label3_slider4_text.setFont(make_font("semibold", 10))
 
         # Изображение
         self.image_label_slider4 = QtWidgets.QLabel(page4)
@@ -384,7 +379,7 @@ class SliderWidget(QtWidgets.QFrame):
                                                     <span style='color:#383535;'>Пример:</span>
                                                 </p>
                                                 """)
-        label6_slider7_text.setFont(QtGui.QFont(font_family_semibold, 9))
+        label6_slider7_text.setFont(make_font("semibold", 9))
 
         self.image_label_slider42 = QtWidgets.QLabel(page4)
         self.image_label_slider42.setGeometry(QtCore.QRect(566, 230, 350, 60))
@@ -404,7 +399,7 @@ class SliderWidget(QtWidgets.QFrame):
         page5 = QtWidgets.QWidget()
         label1_slider5_text = QtWidgets.QLabel("Возможные ошибки", page5)
         label1_slider5_text.setGeometry(QtCore.QRect(30, 30, 250, 25))
-        label1_slider5_text.setFont(QtGui.QFont(font_family_semibold, 14))
+        label1_slider5_text.setFont(make_font("semibold", 14))
 
         label7_slider5_text = QtWidgets.QLabel(page5)
         label7_slider5_text.setGeometry(QtCore.QRect(30, 60, 520, 117))
@@ -419,7 +414,7 @@ class SliderWidget(QtWidgets.QFrame):
                                                     <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;или быть близкими).</span>
                                                 </p>
                                                 """)
-        label7_slider5_text.setFont(QtGui.QFont(font_family_regular, 9))
+        label7_slider5_text.setFont(make_font("regular", 9))
 
         label4_slider5_text = QtWidgets.QLabel(page5)
         label4_slider5_text.setGeometry(QtCore.QRect(30, 190, 500, 90))
@@ -432,7 +427,7 @@ class SliderWidget(QtWidgets.QFrame):
                                              <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;на скриншотах.</span>
                                         </p>
                                         """)
-        label4_slider5_text.setFont(QtGui.QFont(font_family_regular, 9))
+        label4_slider5_text.setFont(make_font("regular", 9))
 
         label7_slider6_text = QtWidgets.QLabel(page5)
         label7_slider6_text.setGeometry(QtCore.QRect(520, 60, 420, 73))
@@ -444,11 +439,11 @@ class SliderWidget(QtWidgets.QFrame):
                                                                     <span style='color:#383535;'>&nbsp;&nbsp;&nbsp;&nbsp;первый из списка).</span>
                                                                 </p>
                                                                 """)
-        label7_slider6_text.setFont(QtGui.QFont(font_family_regular, 9))
+        label7_slider6_text.setFont(make_font("regular", 9))
 
         label3_slider5_text = QtWidgets.QLabel("5/5", page5)
         label3_slider5_text.setGeometry(QtCore.QRect(450, 380, 30, 15))
-        label3_slider5_text.setFont(QtGui.QFont(font_family_semibold, 10))
+        label3_slider5_text.setFont(make_font("semibold", 10))
 
         label6_slider5_text = QtWidgets.QLabel(page5)
         label6_slider5_text.setGeometry(QtCore.QRect(520, 140, 250, 30))
@@ -457,7 +452,7 @@ class SliderWidget(QtWidgets.QFrame):
                                                     <span style='color:#383535;'>Пример такой ситуации:</span>
                                                 </p>
                                                 """)
-        label6_slider5_text.setFont(QtGui.QFont(font_family_semibold, 9))
+        label6_slider5_text.setFont(make_font("semibold", 9))
 
         # Изображение
         self.image_label_slider5 = QtWidgets.QLabel(page5)

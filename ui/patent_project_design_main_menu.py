@@ -1,6 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QFontDatabase
 import os
+
+try:
+    from ui.fonts import load_app_fonts, make_font
+except ImportError:  # запуск файла напрямую из папки ui
+    from fonts import load_app_fonts, make_font
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -16,14 +20,10 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle("Патент Бокс")
         MainWindow.setStyleSheet("background-color: white;")
 
-        # Загружаем кастомные шрифты
-        font_path_black = os.path.join(BASE_DIR, "Geologica Black.ttf")
-        font_path_bold = os.path.join(BASE_DIR, "Geologica.ttf")
-        font_path_semibold = os.path.join(BASE_DIR, "Geologica Roman SemiBold.ttf")
-
-        QFontDatabase.addApplicationFont(font_path_black)
-        QFontDatabase.addApplicationFont(font_path_bold)
-        QFontDatabase.addApplicationFont(font_path_semibold)
+        # Загружаем кастомные шрифты из assets/fonts (раньше искались в ui/, где их больше нет)
+        fonts = load_app_fonts()
+        font_family_black = fonts["black"]
+        font_family_semibold = fonts["semibold"]
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -43,7 +43,7 @@ class Ui_MainWindow(object):
         self.label_top.setAlignment(QtCore.Qt.AlignCenter)
 
         # ✅ Применяем Semibold
-        font = QtGui.QFont("Geologica Roman SemiBold", 10)
+        font = make_font("semibold", 10)
         self.label_top.setFont(font)
 
         # Стиль
@@ -57,7 +57,7 @@ class Ui_MainWindow(object):
         """)
 
         # Шрифт
-        font = QtGui.QFont("Geologica Roman SemiBold", 12)
+        font = make_font("semibold", 12)
         self.label_top.setFont(font)
 
         # Отступы: добавляем +4 пикселя снизу для выравнивания
@@ -82,7 +82,7 @@ class Ui_MainWindow(object):
         """)
         self.label_title.setWordWrap(True)
         self.label_title.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont("Geologica Black", 44)
+        font = make_font("black", 44)
         self.label_title.setFont(font)
 
         # ✅ Убираем белый фон
@@ -92,7 +92,7 @@ class Ui_MainWindow(object):
         self.pushButton_start = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_start.setGeometry(QtCore.QRect(342, 492, 340, 70))
         self.pushButton_start.setText("НАЧАТЬ РАБОТУ")
-        self.pushButton_start.setFont(QtGui.QFont("Geologica Black", 14))
+        self.pushButton_start.setFont(make_font("black", 14))
         self.pushButton_start.setStyleSheet("""
             QPushButton {
                 background-color: rgba(0, 17, 255, 1);
@@ -108,7 +108,7 @@ class Ui_MainWindow(object):
         self.pushButton_help = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_help.setGeometry(QtCore.QRect(342, 570, 340, 70))
         self.pushButton_help.setText("ИНСТРУКЦИЯ")
-        self.pushButton_help.setFont(QtGui.QFont("Geologica Black", 14))
+        self.pushButton_help.setFont(make_font("black", 14))
         self.pushButton_help.setStyleSheet("""
             QPushButton {
                 background-color: rgba(255, 183, 230, 1);
@@ -138,7 +138,7 @@ class Ui_MainWindow(object):
                 """)
         self.label_title.setWordWrap(True)
         self.label_title.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        font = QtGui.QFont("Geologica Roman SemiBold", 9)
+        font = make_font("semibold", 9)
         self.label_title.setFont(font)
 
         # ✅ Убираем белый фон

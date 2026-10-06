@@ -1,6 +1,11 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 
+try:
+    from ui.fonts import load_app_fonts, make_font
+except ImportError:  # запуск файла напрямую из папки ui
+    from fonts import load_app_fonts, make_font
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Ui_SecondWindow(object):
@@ -17,17 +22,12 @@ class Ui_SecondWindow(object):
         MainWindow.setWindowTitle("Патент Бокс")
         MainWindow.setStyleSheet("background-color: white;")
 
-        # === Подключение шрифтов ===
-        def load_font(path, fallback="Arial"):
-            font_id = QtGui.QFontDatabase.addApplicationFont(path)
-            if font_id == -1:
-                return fallback
-            return QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
-
-        font_family_black = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Black.ttf"))
-        font_family_bold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica_Auto-Bold.ttf"))
-        font_family_semibold = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-SemiBold.ttf"))
-        font_family_regular = load_font(os.path.join(BASE_DIR, "assets", "fonts", "Geologica-Regular.ttf"))
+        # === Подключение шрифтов (общий загрузчик, см. ui/fonts.py) ===
+        fonts = load_app_fonts()
+        font_family_black = fonts["black"]
+        font_family_bold = fonts["auto_bold"]
+        font_family_semibold = fonts["semibold"]
+        font_family_regular = fonts["regular"]
 
 
         # Центральный виджет
@@ -37,7 +37,7 @@ class Ui_SecondWindow(object):
         # ==== Кнопка "Назад" ====
         self.back_btn = QtWidgets.QPushButton("Назад", self.centralwidget)
         self.back_btn.setGeometry(30, 30, 138, 50)
-        self.back_btn.setFont(QtGui.QFont(font_family_semibold, 10))
+        self.back_btn.setFont(make_font("semibold", 10))
         self.back_btn.setStyleSheet("""
         QPushButton {
             background-color: #BEC2FF;
@@ -60,13 +60,13 @@ class Ui_SecondWindow(object):
         self.adapter_box.setStyleSheet("background-color: #F4F4F4; border-radius: 16px;")
 
         label_adapter = QtWidgets.QLabel("Путь к вебдрайверу", self.adapter_box)
-        label_adapter.setFont(QtGui.QFont(font_family_semibold, 12))
+        label_adapter.setFont(make_font("semibold", 12))
         label_adapter.setStyleSheet("color: #383535;")
         label_adapter.move(30, 10)
 
         self.adapter_btn = QtWidgets.QPushButton("Выбрать файл", self.adapter_box)
         self.adapter_btn.setGeometry(30, 56, 266, 36)
-        self.adapter_btn.setFont(QtGui.QFont(font_family_bold, 10))
+        self.adapter_btn.setFont(make_font("auto_bold", 10))
         self.adapter_btn.setStyleSheet("""
         QPushButton {
             background-color: #FFFFFF;
@@ -81,7 +81,7 @@ class Ui_SecondWindow(object):
 
         self.adapter_path_edit = QtWidgets.QLineEdit(self.adapter_box)
         self.adapter_path_edit.setReadOnly(True)
-        self.adapter_path_edit.setFont(QtGui.QFont(font_family_regular, 7))
+        self.adapter_path_edit.setFont(make_font("regular", 7))
         self.adapter_path_edit.setGeometry(30, 102, 266, 30)
         self.adapter_path_edit.setStyleSheet("""
         QLineEdit {
@@ -97,13 +97,13 @@ class Ui_SecondWindow(object):
         self.input_box.setStyleSheet("background-color: #F4F4F4; border-radius: 16px;")
 
         label_input = QtWidgets.QLabel("Путь к входящим данным", self.input_box)
-        label_input.setFont(QtGui.QFont(font_family_semibold, 12))
+        label_input.setFont(make_font("semibold", 12))
         label_input.setStyleSheet("color: #383535;")
         label_input.move(30, 10)
 
         self.input_btn = QtWidgets.QPushButton("Выбрать файл", self.input_box)
         self.input_btn.setGeometry(30, 56, 266, 36)
-        self.input_btn.setFont(QtGui.QFont(font_family_bold, 10))
+        self.input_btn.setFont(make_font("auto_bold", 10))
         self.input_btn.setStyleSheet("""
         QPushButton {
             background-color: #FFFFFF;
@@ -118,7 +118,7 @@ class Ui_SecondWindow(object):
 
         self.input_path_edit = QtWidgets.QLineEdit(self.input_box)
         self.input_path_edit.setReadOnly(True)
-        self.input_path_edit.setFont(QtGui.QFont(font_family_regular, 7))
+        self.input_path_edit.setFont(make_font("regular", 7))
         self.input_path_edit.setGeometry(30, 102, 266, 30)
         self.input_path_edit.setStyleSheet("""
         QLineEdit {
@@ -134,7 +134,7 @@ class Ui_SecondWindow(object):
         self.browser_box.setStyleSheet("background-color: #F4F4F4; border-radius: 16px;")
 
         label_browser = QtWidgets.QLabel("Браузер", self.browser_box)
-        label_browser.setFont(QtGui.QFont(font_family_semibold, 12))
+        label_browser.setFont(make_font("semibold", 12))
         label_browser.setStyleSheet("color: #383535;")
         label_browser.move(30, 10)
 
@@ -152,7 +152,7 @@ class Ui_SecondWindow(object):
         # ==== Кнопка "СТАРТ" ====
         self.start_btn = QtWidgets.QPushButton("СТАРТ", self.centralwidget)
         self.start_btn.setGeometry(376, 553, 618, 70)
-        self.start_btn.setFont(QtGui.QFont(font_family_black, 14))
+        self.start_btn.setFont(make_font("black", 14))
         self.start_btn.setStyleSheet("""
         QPushButton {
             background-color: #0011FF;
@@ -175,7 +175,7 @@ class Ui_SecondWindow(object):
 
         label_db = QtWidgets.QLabel(self.db_box)
         label_db.setStyleSheet("background: transparent; color: #383535;")
-        label_db.setFont(QtGui.QFont(font_family_semibold, 12))
+        label_db.setFont(make_font("semibold", 12))
         label_db.setText("""<p style="line-height:77%; margin:0;">База данных (для поисковой<br>системы ФИПС)</p>""")
         label_db.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         label_db.setWordWrap(True)
@@ -221,7 +221,7 @@ class Ui_SecondWindow(object):
         """)
         self.label_footer.setWordWrap(True)
         self.label_footer.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        self.label_footer.setFont(QtGui.QFont(font_family_semibold, 9))
+        self.label_footer.setFont(make_font("semibold", 9))
         self.label_footer.setStyleSheet("background-color: transparent;")
 
         MainWindow.setCentralWidget(self.centralwidget)
