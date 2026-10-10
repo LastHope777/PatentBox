@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QFileDialog
 from ui.patent_project_design_number import Ui_SecondWindow
 from holder_parser import get_patent_holder
+from result_picker import find_exact_result, ExactResultNotFound
 from paths import IMG_LOGO
 from ui.fonts import load_app_fonts
 
@@ -26,6 +27,27 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULT_DOCX = os.path.join(BASE_DIR, "result.docx")
 
 PathToDriver = ""
+
+# Строки выдачи (XPath БЕЗ индекса — берём все результаты, а не только первый).
+# Если сайт поменяет вёрстку, достаточно поправить эти константы.
+FIPS_RESULT_ITEMS = ('//a[@data-index]',
+                     '/html/body/div[3]/div/div/div[1]/div[2]/div/form/div[3]/div/div/a')
+PLATFORM_RESULT_ITEMS = ('//*[@id="layout"]/div[3]/div/div[4]/div[5]/div/div[2]/div/div/div/ul/li',
+                         '//*[@id="layout"]//ul/li[.//a]')
+PLATFORM_RESULT_LINK = ('./div[2]/div/div[1]/div/a', './/a')
+WIPO_RESULT_ITEMS = ('//*[starts-with(@id, "resultListForm:resultTable:") and contains(@id, ":patentResult")]',)
+WIPO_RESULT_LINK = ('./div[1]/div[1]/a', './/a')
+
+
+def write_not_found_row(table, row_index, request, error):
+    """Строка-пометка в таблице, если в выдаче нет документа с точно таким номером."""
+    table.add_row()
+    table.cell(row_index, 1).text = request
+    table.cell(row_index, 2).text = "Документ с таким номером не найден в выдаче — проверьте вручную"
+    table.cell(row_index, 3).text = ""
+    table.cell(row_index, 4).text = ""
+    table.cell(row_index, 5).text = ""
+    print(f"[result] {error}")
 class MyApp(QtWidgets.QMainWindow):
 
     # Главный экрана
@@ -229,7 +251,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 driver.get(url)
                 wait = WebDriverWait(driver, 10)
                 patent_rus = wait.until(
-                    EC.element_to_be_clickable((By.XPATH, '//*[@id="db-selection-form:j_idt74"]/div')))
+                    EC.element_to_be_clickable((By.XPATH, '//*[@id="db-selection-form:j_idt81"]/div')))
                 patent_rus.click()
                 if '7' in selected_checkboxes:
                     patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:j_idt101"]')
@@ -270,8 +292,15 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 button_search = wait.until(EC.element_to_be_clickable((By.XPATH,
                                                     '// *[ @ id = "searchForm"] / div[1] / div[1] / div[3] / div[1] / input')))
                 button_search.click()
-                result1 = wait.until(EC.element_to_be_clickable((By.XPATH,
-                                              '/html/body/div[3]/div/div/div[1]/div[2]/div/form/div[3]/div/div/a/div[1]')))
+                # Из всей выдачи выбираем документ с точно таким же номером, а не первый в списке
+                try:
+                    result1 = find_exact_result(driver, request, FIPS_RESULT_ITEMS, link_xpaths=None)
+                except ExactResultNotFound as exc:
+                    write_not_found_row(table_fips, first_empty_cell, request, exc)
+                    first_empty_cell += 1
+                    document_result.save(RESULT_DOCX)
+                    driver.quit()
+                    continue
                 result1.click()
 
 
@@ -349,15 +378,21 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                 driver.get(url)
                 wait = WebDriverWait(driver, 10)
                 search_input = wait.until(EC.presence_of_element_located(
-                    (By.XPATH, '//*[@id="layout"]/div[3]/div/div[3]/div[1]/div[1]/div[1]/input')))
+                    (By.XPATH, '//*[@id="layout"]/div[3]/div/div[3]/div[1]/div[1]/div[1]/div[2]/input')))
                 search_input.clear()
                 search_input.send_keys(request)
                 button_search_platform = driver.find_element(By.XPATH,
                                                               '//*[@id="layout"]/div[3]/div/div[2]/div/div/button')
                 button_search_platform.click()
-                result_patent = wait.until(EC.element_to_be_clickable((By.XPATH,
-                                                    '/html/body/div/div/div[3]/div/div[4]/div[4]/div/div['
-                                                    '2]/div/div/div/ul/li[1]/div[2]/div/div[1]/div/div')))
+                # Из всей выдачи выбираем документ с точно таким же номером, а не первый в списке
+                try:
+                    result_patent = find_exact_result(driver, request, PLATFORM_RESULT_ITEMS,
+                                                      link_xpaths=PLATFORM_RESULT_LINK)
+                except ExactResultNotFound as exc:
+                    write_not_found_row(table_platform, first_empty_cell, request, exc)
+                    first_empty_cell += 1
+                    document_result.save(RESULT_DOCX)
+                    continue
                 result_patent.click()
                 country = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[1]/div[2]')))
                 number1 = driver.find_element(By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[2]/div[2]')
@@ -449,7 +484,7 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                                                          '/html/body/div[2]/div[5]/div/div[2]/form/div/div[1]/div['
                                                          '2]/div/div/div[1]/div[2]/button')
                 button_search_wipo.click()
-
+                time.sleep(5)
                 try:
                     name = driver.find_element(By.XPATH,
                                                '//*[@id="headerForm:headerFormContent"]/h1/div/div[1]').text
@@ -480,10 +515,16 @@ def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
                                                '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
                                                '1]/div/div/div[2]/div/div[1]/div[5]/span[2]').text
                 except:
-                    result2 = driver.find_element(By.XPATH,
-                                                  '//*[@id="resultListForm:resultTable:0:patentResult"]/div[1]/div['
-                                                  '1]/a/span')
-
+                    # Из всей выдачи выбираем документ с точно таким же номером, а не первый в списке
+                    try:
+                        result2 = find_exact_result(driver, request, WIPO_RESULT_ITEMS,
+                                                    link_xpaths=WIPO_RESULT_LINK)
+                    except ExactResultNotFound as exc:
+                        write_not_found_row(table_wipo, first_empty_cell, request, exc)
+                        first_empty_cell += 1
+                        document_result.save(RESULT_DOCX)
+                        driver.quit()
+                        continue
                     result2.click()
                     number1 = wait.until(EC.presence_of_element_located((By.XPATH,
                                                   '//*[@id="headerForm:headerFormContent"]/h1/div/div[1]'))).text
