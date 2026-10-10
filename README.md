@@ -62,7 +62,11 @@
 ## 📁 Структура проекта
 ```
 PatentBox/
-├── main.py
+├── main.py              # точка входа и окна приложения
+├── patent_search.py     # чтение входного .docx и запись таблиц в result.docx
+├── scrapers.py          # поиск на ФИПС, Платформе Роспатента и WIPO (все XPath — здесь)
+├── holder_parser.py     # поиск патентообладателя на странице патента
+├── result_picker.py     # выбор в выдаче документа с точно таким номером
 ├── paths.py
 ├── requirements.txt
 ├── README.md
@@ -73,12 +77,13 @@ PatentBox/
 │   └── images/
 └── ui/
     ├── __init__.py
+    ├── fonts.py
     ├── design.py
     ├── page_instruction.py
     ├── page_instruction_slider.py
-    ├── patent_ptoject_design_main_menu.py
-    ├── patent_ptoject_design_main_menu.ui
-    ├── patent_ptoject_design_number.py
+    ├── patent_project_design_main_menu.py
+    ├── patent_project_design_main_menu.ui
+    ├── patent_project_design_number.py
     └── patent_project_design_number.ui
 ```
 ---

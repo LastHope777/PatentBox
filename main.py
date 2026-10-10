@@ -1,609 +1,151 @@
+"""
+ПатентБокс — точка входа и окна приложения.
+
+Логика поиска вынесена в отдельные модули:
+  patent_search.py — чтение входного .docx и запись таблиц в result.docx;
+  scrapers.py      — работа с сайтами ФИПС, Платформы Роспатента и WIPO;
+  holder_parser.py — поиск патентообладателя на странице патента;
+  result_picker.py — выбор в выдаче документа с точно таким номером.
+"""
+
 import os
-import time
-
-from selenium import webdriver
-from docx import Document
 import sys
-from PyQt5 import QtWidgets, QtGui
+import traceback
 
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.service import Service
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
+from paths import IMG_LOGO
+from patent_search import FIPS_ALL_DATABASES, process_document
+from ui.fonts import load_app_fonts
 from ui.page_instruction import Ui_InstructionWindow
 from ui.page_instruction_slider import Ui_InstructionSlider
 from ui.patent_project_design_main_menu import Ui_MainWindow
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtWidgets import QFileDialog
 from ui.patent_project_design_number import Ui_SecondWindow
-from holder_parser import get_patent_holder
-from result_picker import find_exact_result, ExactResultNotFound
-from paths import IMG_LOGO
-from ui.fonts import load_app_fonts
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-RESULT_DOCX = os.path.join(BASE_DIR, "result.docx")
-
-PathToDriver = ""
-
-# Строки выдачи (XPath БЕЗ индекса — берём все результаты, а не только первый).
-# Если сайт поменяет вёрстку, достаточно поправить эти константы.
-FIPS_RESULT_ITEMS = ('//a[@data-index]',
-                     '/html/body/div[3]/div/div/div[1]/div[2]/div/form/div[3]/div/div/a')
-PLATFORM_RESULT_ITEMS = ('//*[@id="layout"]/div[3]/div/div[4]/div[5]/div/div[2]/div/div/div/ul/li',
-                         '//*[@id="layout"]//ul/li[.//a]')
-PLATFORM_RESULT_LINK = ('./div[2]/div/div[1]/div/a', './/a')
-WIPO_RESULT_ITEMS = ('//*[starts-with(@id, "resultListForm:resultTable:") and contains(@id, ":patentResult")]',)
-WIPO_RESULT_LINK = ('./div[1]/div[1]/a', './/a')
 
 
-def write_not_found_row(table, row_index, request, error):
-    """Строка-пометка в таблице, если в выдаче нет документа с точно таким номером."""
-    table.add_row()
-    table.cell(row_index, 1).text = request
-    table.cell(row_index, 2).text = "Документ с таким номером не найден в выдаче — проверьте вручную"
-    table.cell(row_index, 3).text = ""
-    table.cell(row_index, 4).text = ""
-    table.cell(row_index, 5).text = ""
-    print(f"[result] {error}")
-class MyApp(QtWidgets.QMainWindow):
+class BaseWindow(QtWidgets.QMainWindow):
+    """Окно с UI-классом из папки ui и переходом на другое окно."""
 
-    # Главный экрана
+    ui_class = None
+
     def __init__(self):
         super().__init__()
-        self.ui = Ui_MainWindow()
+        self.ui = self.ui_class()
         self.ui.setupUi(self)
-        self.second_window = None
-        self.ui.pushButton_start.clicked.connect(self.open_second_window)
-        self.ui.pushButton_help.clicked.connect(self.open_help_window)
+        self.next_window = None
 
-    # Переход на второй экран
-    def open_second_window(self):
-        self.second_window = WorkWithWord()
-        self.second_window.show()
+    def switch_to(self, window_class):
+        self.next_window = window_class()
+        self.next_window.show()
         self.close()
 
-    def open_help_window(self):
-        self.help_window = HelpWindow()
-        self.help_window.show()
-        self.close()
 
-class HelpWindow(QtWidgets.QMainWindow):
+class MainMenuWindow(BaseWindow):
+    """Главный экран: «Начать работу» и «Инструкция»."""
+
+    ui_class = Ui_MainWindow
+
     def __init__(self):
         super().__init__()
-        self.ui = Ui_InstructionWindow()
-        self.ui.setupUi(self)
-        # Кнопка "Назад"
-        self.ui.back_btn.clicked.connect(self.go_back)
-        self.ui.continue_btn.clicked.connect(self.go_slider)
+        self.ui.pushButton_start.clicked.connect(lambda: self.switch_to(SearchWindow))
+        self.ui.pushButton_help.clicked.connect(lambda: self.switch_to(InstructionWindow))
 
-    def go_back(self):
-        self.first_window = MyApp()
-        self.first_window.show()
-        self.close()
 
-    def go_slider(self):
-        self.slider = SliderWithHelp()
-        self.slider.show()
-        self.close()
+class InstructionWindow(BaseWindow):
+    """Первая страница инструкции."""
 
-class SliderWithHelp(QtWidgets.QMainWindow):
+    ui_class = Ui_InstructionWindow
+
     def __init__(self):
         super().__init__()
-        self.ui = Ui_InstructionSlider()
-        self.ui.setupUi(self)
-        self.ui.back_btn.clicked.connect(self.go_back)
+        self.ui.back_btn.clicked.connect(lambda: self.switch_to(MainMenuWindow))
+        self.ui.continue_btn.clicked.connect(lambda: self.switch_to(InstructionSliderWindow))
 
-    def go_back(self):
-        self.first_window = HelpWindow()
-        self.first_window.show()
-        self.close()
 
-class WorkWithWord(QtWidgets.QMainWindow):
+class InstructionSliderWindow(BaseWindow):
+    """Слайдер с подробной инструкцией."""
 
-    # Второй экран
+    ui_class = Ui_InstructionSlider
+
     def __init__(self):
         super().__init__()
-        self.ui = Ui_SecondWindow()
-        self.ui.setupUi(self)
+        self.ui.back_btn.clicked.connect(lambda: self.switch_to(InstructionWindow))
 
-        # Привязка кнопок выбора файлов
-        self.ui.input_btn.clicked.connect(self.open_file_dialog_input)
-        self.ui.adapter_btn.clicked.connect(self.open_file_dialog_driver)
 
-        # Логика чекбоксов
-        self.ui.cb7.stateChanged.connect(self.toggle_checkboxes)
+class SearchWindow(BaseWindow):
+    """Второй экран: выбор файлов, браузера, баз ФИПС и запуск поиска."""
 
-        # Кнопка старта
-        self.ui.start_btn.clicked.connect(self.WorkWithWord_run)
+    ui_class = Ui_SecondWindow
 
-        # Кнопка "Назад"
-        self.ui.back_btn.clicked.connect(self.go_back)
+    def __init__(self):
+        super().__init__()
+        # Порядок важен: индекс галочки = номер базы в группе «Патентные документы РФ (рус.)» на ФИПС
+        self.fips_checkboxes = [self.ui.cb1, self.ui.cb2, self.ui.cb3,
+                                self.ui.cb4, self.ui.cb5, self.ui.cb6]
 
-    def go_back(self):
-        self.first_window = MyApp()
-        self.first_window.show()
-        self.close()
+        self.ui.input_btn.clicked.connect(
+            lambda: self.choose_file(self.ui.input_path_edit, "Документы (*.docx)"))
+        self.ui.adapter_btn.clicked.connect(
+            lambda: self.choose_file(self.ui.adapter_path_edit, "Программы (*.exe)"))
+        self.ui.cb7.stateChanged.connect(self.toggle_all_databases)
+        self.ui.start_btn.clicked.connect(self.run_search)
+        self.ui.back_btn.clicked.connect(lambda: self.switch_to(MainMenuWindow))
 
-    def show_success_message(self):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setWindowTitle("Успех")
-        msg.setText("Данные успешно сохранены")
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec_()
-
-    def toggle_checkboxes(self):
-        is_checked = self.ui.cb7.isChecked()
-        for cb in [self.ui.cb1, self.ui.cb2, self.ui.cb3,
-                   self.ui.cb4, self.ui.cb5, self.ui.cb6]:
-            cb.setChecked(is_checked)
-
-    def open_file_dialog_input(self):
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Выберите файл",
-            "",
-            "Документы (*.docx)"
-        )
+    def choose_file(self, line_edit, file_filter):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Выберите файл", "", file_filter)
         if file_path:
-            self.ui.input_path_edit.setText(file_path)
+            line_edit.setText(file_path)
 
-    def open_file_dialog_driver(self):
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Выберите файл",
-            "",
-            "Программы (*.exe)"
-        )
-        if file_path:
-            self.ui.adapter_path_edit.setText(file_path)
+    def toggle_all_databases(self):
+        for checkbox in self.fips_checkboxes:
+            checkbox.setChecked(self.ui.cb7.isChecked())
 
-    def WorkWithWord_run(self):
-        path_to_input = self.ui.input_path_edit.text()
-        path_to_driver = self.ui.adapter_path_edit.text()
-
-        browser = self.ui.get_selected_browser()
-
-        selected_checkboxes = []
-        if self.ui.cb1.isChecked():
-            selected_checkboxes.append('1')
-        if self.ui.cb2.isChecked():
-            selected_checkboxes.append('2')
-        if self.ui.cb3.isChecked():
-            selected_checkboxes.append('3')
-        if self.ui.cb4.isChecked():
-            selected_checkboxes.append('4')
-        if self.ui.cb5.isChecked():
-            selected_checkboxes.append('5')
-        if self.ui.cb6.isChecked():
-            selected_checkboxes.append('6')
+    def selected_fips_databases(self):
         if self.ui.cb7.isChecked():
-            selected_checkboxes.append('7')
+            return FIPS_ALL_DATABASES
+        return [index for index, checkbox in enumerate(self.fips_checkboxes) if checkbox.isChecked()]
 
-        WordMode(path_to_input, selected_checkboxes, path_to_driver, browser)
-        self.show_success_message()
+    def run_search(self):
+        input_path = self.ui.input_path_edit.text().strip()
+        driver_path = self.ui.adapter_path_edit.text().strip()
+        if not os.path.isfile(input_path):
+            QMessageBox.warning(self, "Не хватает данных", "Выберите файл с входными данными (.docx).")
+            return
+        if not os.path.isfile(driver_path):
+            QMessageBox.warning(self, "Не хватает данных", "Укажите путь к веб-драйверу (.exe).")
+            return
 
+        self.ui.start_btn.setEnabled(False)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        summary, error = None, None
+        try:
+            summary = process_document(input_path, driver_path,
+                                       self.ui.get_selected_browser(),
+                                       self.selected_fips_databases())
+        except PermissionError:
+            error = "Не удалось сохранить result.docx — закройте его в Word и запустите поиск снова."
+        except Exception as exc:  # показываем ошибку, а не роняем приложение
+            traceback.print_exc()
+            error = f"Поиск остановлен из-за ошибки:\n{exc}"
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+            self.ui.start_btn.setEnabled(True)
 
-class Patent:
-
-    def __init__(self, number, name, holder, mpk, date):
-        self.number = number
-        self.name = name
-        self.holder = holder  # патентообладатель (или заявитель), НЕ авторы
-        self.MPK = mpk
-        self.date = date
-
-def WordMode(path_to_document, selected_checkboxes, path_to_driver, browser):
-    result = []
-    document = Document(path_to_document)
-    for table in document.tables:
-        first_cell = table.cell(0, 0).text
-
-        if (table.cell(0, 0).text == 'ФИПС'
-                or table.cell(0, 0).text == 'Фипс'
-                or table.cell(0, 0).text == 'фипс'):
-
-            number_search = []
-            arr_number = []
-            count = 0
-            for rows in table.rows[1:]:
-                cell_text = rows.cells[0].text
-                words = cell_text.split(" ")
-                if len(words) > 0:
-                    arr_number.append(words)
-                    number_search.append(words[0])
-            document_result = Document(RESULT_DOCX) if os.path.exists(RESULT_DOCX) else Document()
-            first_empty_cell = 2
-            table_fips = document_result.add_table(rows=2, cols=6)
-            table_fips.cell(0, 0).text = 'Объект исследования, его составные части'
-            table_fips.cell(0,
-                           1).text = ('Вид и номер охранного документа с двухбуквенным кодом страны/режим действия ('
-                                      'действует/не действует/может быть восстановлен)')
-            table_fips.cell(0,
-                           2).text = 'Название объекта интеллектуальной собственности'
-            table_fips.cell(0,
-                           3).text = 'Заявитель (правообладатель)'
-            table_fips.cell(0,
-                           4).text = 'Классификационные рубрики'
-            table_fips.cell(0,
-                           5).text = 'Дата приоритета/ дата публикации'
-            table_fips.cell(1, 0).text = '1'
-            table_fips.cell(1,
-                           1).text = '2'
-            table_fips.cell(1,
-                           2).text = '3'
-            table_fips.cell(1,
-                           3).text = '4'
-            table_fips.cell(1,
-                           4).text = '5'
-            table_fips.cell(1,
-                           5).text = '6'
-            for request in number_search:
-                url = 'https://www.fips.ru/iiss/'
-                service = Service(executable_path=path_to_driver)
-                if browser == "google":
-                    driver = webdriver.Chrome(service=service)
-                elif browser == "edge":
-                    driver = webdriver.Edge(service=service)
-                driver.get(url)
-                wait = WebDriverWait(driver, 10)
-                patent_rus = wait.until(
-                    EC.element_to_be_clickable((By.XPATH, '//*[@id="db-selection-form:j_idt81"]/div')))
-                patent_rus.click()
-                if '7' in selected_checkboxes:
-                    patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:j_idt101"]')
-                    patent_rus.click()
-
-                else:
-                    if '1' in selected_checkboxes:
-                        patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:dbsGrid1:0'
-                                                                   ':dbsGrid1checkbox"]')
-                        patent_rus.click()
-                    if '2' in selected_checkboxes:
-                        patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:dbsGrid1:1'
-                                                                   ':dbsGrid1checkbox"]')
-                        patent_rus.click()
-                    if '3' in selected_checkboxes:
-                        patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:dbsGrid1:2'
-                                                                   ':dbsGrid1checkbox"]')
-                        patent_rus.click()
-                    if '4' in selected_checkboxes:
-                        patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:dbsGrid1:3'
-                                                                   ':dbsGrid1checkbox"]')
-                        patent_rus.click()
-                    if '5' in selected_checkboxes:
-                        patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:dbsGrid1:4'
-                                                                   ':dbsGrid1checkbox"]')
-                        patent_rus.click()
-                    if '6' in selected_checkboxes:
-                        patent_rus = driver.find_element(By.XPATH, '//*[@id="db-selection-form:dbsGrid1:5'
-                                                                   ':dbsGrid1checkbox"]')
-                        patent_rus.click()
-                time.sleep(1)
-                button_search = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="db-selection-form:button-set1"]/div[1]/input')))
-                button_search.click()
-
-                main_area_request = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="fields:1:j_idt109"]')))
-                main_area_request.click()
-                main_area_request.send_keys(request)
-                button_search = wait.until(EC.element_to_be_clickable((By.XPATH,
-                                                    '// *[ @ id = "searchForm"] / div[1] / div[1] / div[3] / div[1] / input')))
-                button_search.click()
-                # Из всей выдачи выбираем документ с точно таким же номером, а не первый в списке
-                try:
-                    result1 = find_exact_result(driver, request, FIPS_RESULT_ITEMS, link_xpaths=None)
-                except ExactResultNotFound as exc:
-                    write_not_found_row(table_fips, first_empty_cell, request, exc)
-                    first_empty_cell += 1
-                    document_result.save(RESULT_DOCX)
-                    driver.quit()
-                    continue
-                result1.click()
+        if error:
+            QMessageBox.critical(self, "Ошибка", error)
+        else:
+            QMessageBox.information(self, "Готово", summary.message())
 
 
-                try:
-                    validity = driver.find_element(By.XPATH, '//*[@id="StatusR"]').text
-                except:
-                    try:
-                        validity = driver.find_element(By.XPATH, '//*[@id="StatusRAP"]').text
-                    except:
-                        validity = "Не удалось найти информацию о режиме действия патента"
-                number = (driver.find_element(By.XPATH, '//*[@id="top2"]').text + " "
-                          + driver.find_element(By.XPATH, '//*[@id="top4"]').text + " "
-                          + driver.find_element(By.XPATH, '//*[@id="top6"]').text + "\n" + validity)
-                count += 1
-                name = driver.find_element(By.XPATH,
-                                           '/html/body/div[3]/div/div/div[1]/div[2]/form/div/div/div[2]/div/div/p/b').text
-                # p[1] в #bibl — это (72) Авторы, поэтому ищем (73) Патентообладатель по подписи
-                holder = get_patent_holder(driver)
-                mpk = driver.find_element(By.XPATH,
-                                          '// *[ @ id = "mainDoc"] / table[1] / tbody / tr / td[2] / table / tbody / '
-                                          'tr[2] / td[1] / div / ul / li / a / span').text
-                date = driver.find_element(By.XPATH, '// *[ @ id = "bib"] / tbody / tr / td[1] / p[2] / b').text
-                result.append(Patent(number, name, holder, mpk, date))
-
-                table_fips.add_row()
-                for _ in table_fips.rows[1:]:
-                    table_fips.cell(first_empty_cell, 1).text = number
-                    table_fips.cell(first_empty_cell, 2).text = name
-                    table_fips.cell(first_empty_cell, 3).text = holder
-                    table_fips.cell(first_empty_cell, 4).text = mpk
-                    table_fips.cell(first_empty_cell, 5).text = date
-                first_empty_cell += 1
-                document_result.save(RESULT_DOCX)
-
-                driver.quit()
-
-        if table.cell(0, 0).text == 'Платформа' or table.cell(0, 0).text == 'платформа':
-            url = "https://openstat.rospatent.gov.ru/patents"
-            number_search = []
-            document_result = Document(RESULT_DOCX) if os.path.exists(RESULT_DOCX) else Document()
-            first_empty_cell = 2
-            table_platform = document_result.add_table(rows=2, cols=6)
-            table_platform.cell(0, 0).text = 'Объект исследования, его составные части'
-            table_platform.cell(0,
-                                1).text = ('Вид и номер охранного документа с двухбуквенным кодом страны/режим '
-                                           'действия (действует/не действует/может быть восстановлен)')
-            table_platform.cell(0,
-                                2).text = 'Название объекта интеллектуальной собственности'
-            table_platform.cell(0,
-                                3).text = 'Заявитель (правообладатель)'
-            table_platform.cell(0,
-                                4).text = 'Классификационные рубрики'
-            table_platform.cell(0,
-                                5).text = 'Дата приоритета/ дата публикации'
-            table_platform.cell(1, 0).text = '1'
-            table_platform.cell(1,
-                                1).text = '2'
-            table_platform.cell(1,
-                                2).text = '3'
-            table_platform.cell(1,
-                                3).text = '4'
-            table_platform.cell(1,
-                                4).text = '5'
-            table_platform.cell(1,
-                                5).text = '6'
-            for rows in table.rows[1:]:
-                cell_text = rows.cells[0].text
-                number_search.append(cell_text)
-            service = Service(executable_path=path_to_driver)
-            if browser == "google":
-                driver = webdriver.Chrome(service=service)
-            elif browser == "edge":
-                driver = webdriver.Edge(service=service)
-            for request in number_search:
-                driver.get(url)
-                wait = WebDriverWait(driver, 10)
-                search_input = wait.until(EC.presence_of_element_located(
-                    (By.XPATH, '//*[@id="layout"]/div[3]/div/div[3]/div[1]/div[1]/div[1]/div[2]/input')))
-                search_input.clear()
-                search_input.send_keys(request)
-                button_search_platform = driver.find_element(By.XPATH,
-                                                              '//*[@id="layout"]/div[3]/div/div[2]/div/div/button')
-                button_search_platform.click()
-                # Из всей выдачи выбираем документ с точно таким же номером, а не первый в списке
-                try:
-                    result_patent = find_exact_result(driver, request, PLATFORM_RESULT_ITEMS,
-                                                      link_xpaths=PLATFORM_RESULT_LINK)
-                except ExactResultNotFound as exc:
-                    write_not_found_row(table_platform, first_empty_cell, request, exc)
-                    first_empty_cell += 1
-                    document_result.save(RESULT_DOCX)
-                    continue
-                result_patent.click()
-                country = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[1]/div[2]')))
-                number1 = driver.find_element(By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[2]/div[2]')
-                number2 = driver.find_element(By.XPATH, '//*[@id="doc-biblio"]/div[2]/div[1]/div[3]/div[2]')
-                number = country.text + " " + number1.text + " " + number2.text
-                name = driver.find_element(By.XPATH,
-                                           '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div[3]/div/div['
-                                           '1]/div/div[1]/div[1]/h1').text
-                # Патентообладатель (ищем по подписи поля, а не по позиции)
-                holder = get_patent_holder(driver)
-                mpk_text = driver.find_element(By.XPATH,
-                                          '//*[@id="doc-biblio"]/div[2]/div[3]/div[2]').text
-                if mpk_text == "МПК":
-                    mpk = driver.find_element(By.XPATH,
-                                            '//*[@id="doc-biblio"]/div[2]/div[3]/div[3]').text
-                else:
-                    mpk = driver.find_element(By.XPATH,
-                                            '//*[@id="doc-biblio"]/div[2]/div[4]/div[3]').text
-                try:
-                    date = driver.find_element(By.XPATH,
-                                               '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div[3]/div/div['
-                                               '1]/div/div[1]/div[1]/div[5]/div[4]').text
-                except:
-                    date = driver.find_element(By.XPATH,
-                                               '/html/body/div/div/div[3]/div/div/div[2]/div[1]/div[3]/div/div['
-                                               '1]/div/div[1]/div[1]/div[4]/div[4]').text
-                result.append(Patent(number, name, holder, mpk, date))
-                table_platform.add_row()
-                for _ in table_platform.rows[1:]:
-                    table_platform.cell(first_empty_cell, 1).text = number
-                    table_platform.cell(first_empty_cell, 2).text = name
-                    table_platform.cell(first_empty_cell, 3).text = holder
-                    table_platform.cell(first_empty_cell, 4).text = mpk
-                    table_platform.cell(first_empty_cell, 5).text = date
-                first_empty_cell += 1
-                document_result.save(RESULT_DOCX)
-
-            driver.quit()
-
-        if (table.cell(0, 0).text == 'WIPO'
-                or table.cell(0, 0).text == 'wipo'
-                or table.cell(0, 0).text == 'Wipo'):
-
-            number_search = []
-            document_result = Document(RESULT_DOCX) if os.path.exists(RESULT_DOCX) else Document()
-            first_empty_cell = 2
-            table_wipo = document_result.add_table(rows=2, cols=6)
-
-            table_wipo.cell(0, 0).text = 'Объект исследования, его составные части'
-            table_wipo.cell(0,
-                           1).text = ('Вид и номер охранного документа с двухбуквенным кодом страны/режим действия ('
-                                      'действует/не действует/может быть восстановлен)')
-            table_wipo.cell(0,
-                           2).text = 'Название объекта интеллектуальной собственности'
-            table_wipo.cell(0,
-                           3).text = 'Заявитель (правообладатель)'
-            table_wipo.cell(0,
-                           4).text = 'Классификационные рубрики'
-            table_wipo.cell(0,
-                           5).text = 'Дата приоритета/ дата публикации'
-            table_wipo.cell(1, 0).text = '1'
-            table_wipo.cell(1,
-                           1).text = '2'
-            table_wipo.cell(1,
-                           2).text = '3'
-            table_wipo.cell(1,
-                           3).text = '4'
-            table_wipo.cell(1,
-                           4).text = '5'
-            table_wipo.cell(1,
-                           5).text = '6'
-
-            for rows in table.rows[1:]:
-                cell_text = rows.cells[0].text
-                number_search.append(cell_text)
-            for request in number_search:
-                service = Service(executable_path=path_to_driver)
-                if browser == "google":
-                    driver = webdriver.Chrome(service=service)
-                elif browser == "edge":
-                    driver = webdriver.Edge(service=service)
-                url = "https://patentscope.wipo.int/search/ru/search.jsf"
-                driver.get(url)
-                wait = WebDriverWait(driver, 10)
-                field_search = wait.until(
-                    EC.element_to_be_clickable((By.XPATH, '//*[@id="simpleSearchForm:fpSearch:input"]')))
-                field_search.send_keys(request)
-                button_search_wipo = driver.find_element(By.XPATH,
-                                                         '/html/body/div[2]/div[5]/div/div[2]/form/div/div[1]/div['
-                                                         '2]/div/div/div[1]/div[2]/button')
-                button_search_wipo.click()
-                time.sleep(5)
-                try:
-                    name = driver.find_element(By.XPATH,
-                                               '//*[@id="headerForm:headerFormContent"]/h1/div/div[1]').text
-                    suffix1 = name.index(" - ") + 3
-                    str3 = name[suffix1:]
-                    number = request
-                    name = str3
-
-                    holder = get_patent_holder(driver)
-
-                    try:
-                        mpk = driver.find_element(By.XPATH,
-                                                  '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
-                                                  '1]/div/div/div[2]/div/div[1]/div[9]/span[2]/div/div[1]').text
-                    except:
-                        try:
-                            mpk = driver.find_element(By.XPATH,
-                                                      '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                      '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                      '5]/span[2]/div/div[1]').text
-                        except:
-                            mpk = driver.find_element(By.XPATH,
-                                                      '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                      '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                      '7]/span[2]/div/div[1]/div').text
-
-                    date = driver.find_element(By.XPATH,
-                                               '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
-                                               '1]/div/div/div[2]/div/div[1]/div[5]/span[2]').text
-                except:
-                    # Из всей выдачи выбираем документ с точно таким же номером, а не первый в списке
-                    try:
-                        result2 = find_exact_result(driver, request, WIPO_RESULT_ITEMS,
-                                                    link_xpaths=WIPO_RESULT_LINK)
-                    except ExactResultNotFound as exc:
-                        write_not_found_row(table_wipo, first_empty_cell, request, exc)
-                        first_empty_cell += 1
-                        document_result.save(RESULT_DOCX)
-                        driver.quit()
-                        continue
-                    result2.click()
-                    number1 = wait.until(EC.presence_of_element_located((By.XPATH,
-                                                  '//*[@id="headerForm:headerFormContent"]/h1/div/div[1]'))).text
-                    suffix1 = number1.index(". ") + 2
-                    str1 = number1[suffix1:]
-                    suffix2 = number1.index(" - ") - 3
-                    str2 = str1[:suffix2]
-                    try:
-                        temp = driver.find_element(By.XPATH,
-                                                   '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
-                                                   '1]/div/div/div[2]/div/div[1]/div[6]/span[1]/span').text
-                        if temp == "Вид публикации":
-                            number2 = driver.find_element(By.XPATH,
-                                                          '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                          '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                          '8]/span[2]').text
-                        else:
-                            number2 = driver.find_element(By.XPATH,
-                                                          '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                          '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                          '6]/span[2]').text
-                    except:
-                        number2 = ""
-                    name = driver.find_element(By.XPATH,
-                                               '//*[@id="headerForm:headerFormContent"]/h1/div/div[1]').text
-                    suffix1 = name.index(" - ") + 3
-                    str3 = name[suffix1:]
-                    number = str2 + " " + number2
-                    name = str3
-                    holder = get_patent_holder(driver)
-
-                    try:
-                        mpk = driver.find_element(By.XPATH,
-                                                  '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
-                                                  '1]/div/div/div[2]/div/div[1]/div[9]/span[2]/div/div[1]').text
-                    except:
-                        try:
-                            mpk = driver.find_element(By.XPATH,
-                                                      '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                      '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                      '5]/span[2]/div/div[1]').text
-                        except:
-                            mpk = driver.find_element(By.XPATH,
-                                                      '/html/body/div[2]/div[5]/div/div[1]/div['
-                                                      '2]/form/div/div/div/div[1]/div/div/div[2]/div/div[1]/div['
-                                                      '7]/span[2]/div/div[1]/div').text
-                    date = driver.find_element(By.XPATH,
-                                               '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
-                                               '1]/div/div/div[2]/div/div[1]/div[5]/span[2]').text
-                result.append(Patent(number, name, holder, mpk, date))
-
-                table_wipo.add_row()
-                if mpk == date:
-                    mpk = driver.find_element(By.XPATH,
-                                              '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
-                                              '1]/div/div/div[2]/div/div[1]/div[5]/span[2]/div/div[1]').text
-                    date = driver.find_element(By.XPATH,
-                                               '/html/body/div[2]/div[5]/div/div[1]/div[2]/form/div/div/div/div['
-                                               '1]/div/div/div[2]/div/div[1]/div[2]/span[2]').text
-                for _ in table_wipo.rows[1:]:
-                    table_wipo.cell(first_empty_cell, 1).text = number
-                    table_wipo.cell(first_empty_cell, 2).text = name
-                    table_wipo.cell(first_empty_cell, 3).text = holder
-                    table_wipo.cell(first_empty_cell, 4).text = mpk
-                    table_wipo.cell(first_empty_cell, 5).text = date
-
-                first_empty_cell += 1
-                document_result.save(RESULT_DOCX)
-
-                driver.quit()
-
-    return result
-
-
-if __name__ == "__main__":
-
+def main():
     app = QtWidgets.QApplication(sys.argv)
     load_app_fonts()  # регистрируем шрифты Geologica один раз, до создания окон
     app.setWindowIcon(QtGui.QIcon(IMG_LOGO))
-    window = MyApp()
+    window = MainMenuWindow()
     window.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
